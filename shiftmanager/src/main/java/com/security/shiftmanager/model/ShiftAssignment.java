@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
@@ -43,6 +44,12 @@ public class ShiftAssignment {
 
     @Column(length = 500)
     private String notes;
+
+    @Column
+    private LocalDateTime actualStartTime;
+
+    @Column
+    private LocalDateTime actualEndTime;
 
     public ShiftAssignment() {
     }
@@ -129,5 +136,21 @@ public class ShiftAssignment {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public LocalDateTime getActualStartTime() {
+        return actualStartTime;
+    }
+
+    public void setActualStartTime(LocalDateTime actualStartTime) {
+        this.actualStartTime = actualStartTime;
+    }
+
+    public LocalDateTime getActualEndTime() {
+        return actualEndTime;
+    }
+
+    public void setActualEndTime(LocalDateTime actualEndTime) {
+        this.actualEndTime = actualEndTime;
     }
 }
