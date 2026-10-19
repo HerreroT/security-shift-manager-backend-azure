@@ -1,14 +1,21 @@
 package com.security.shiftmanager.controller;
 
-import com.security.shiftmanager.model.Guard;
+import com.security.shiftmanager.dto.GuardRequest;
+import com.security.shiftmanager.dto.GuardResponse;
 import com.security.shiftmanager.service.GuardService;
+import jakarta.validation.Valid;
 import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -22,27 +29,36 @@ public class GuardController {
     }
 
     @GetMapping
-    public List<Guard> getAll() {
-        return guardService.findAll();
+    public List<GuardResponse> getAll(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Boolean active) {
+        return guardService.search(search, active);
     }
 
     @GetMapping("/{id}")
-    public Guard getById(@PathVariable Long id) {
+    public GuardResponse getById(@PathVariable Long id) {
         return guardService.findById(id);
     }
 
     @PostMapping
-    public Guard create(@RequestBody Guard guard) {
-        return guardService.create(guard);
+    @ResponseStatus(HttpStatus.CREATED)
+    public GuardResponse create(@Valid @RequestBody GuardRequest request) {
+        return guardService.create(request);
     }
 
     @PutMapping("/{id}")
-    public Guard update(@PathVariable Long id, @RequestBody Guard guard) {
-        return guardService.update(id, guard);
+    public GuardResponse update(@PathVariable Long id, @Valid @RequestBody GuardRequest request) {
+        return guardService.update(id, request);
     }
 
-    @PostMapping("/{id}/deactivate")
-    public Guard deactivate(@PathVariable Long id) {
-        return guardService.deactivate(id);
+    /** Soft delete: the guard is deactivated so its shift history is kept. */
+    @DeleteMapping("/{id}")
+    public GuardResponse deactivate(@PathVariable Long id) {
+        return guardService.setActive(id, false);
+    }
+
+    @PatchMapping("/{id}/activate")
+    public GuardResponse activate(@PathVariable Long id) {
+        return guardService.setActive(id, true);
     }
 }

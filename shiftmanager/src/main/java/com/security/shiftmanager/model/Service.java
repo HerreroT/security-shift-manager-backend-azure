@@ -21,7 +21,7 @@ public class Service {
     @Column(nullable = false)
     private String location;
 
-    @Column(nullable = false)
+    @Column(length = 500)
     private String description;
 
     @Column(nullable = false)
