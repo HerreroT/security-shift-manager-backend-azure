@@ -30,11 +30,19 @@ This document describes the initial backend domain model.
 - `id`: unique identifier
 - `guard`: assigned guard
 - `service`: assigned service
-- `date`: assignment date
-- `startTime`: shift start time
-- `endTime`: shift end time
-- `totalHours`: total worked hours for the shift
+- `startDateTime`: planned shift start (date and time)
+- `endDateTime`: planned shift end (date and time). It can be on the next day, e.g. a night shift from 20:00 to 08:00.
+- `totalHours`: worked hours, calculated by the server. It uses the real check-in/check-out times when both exist, otherwise the planned duration.
 - `notes`: optional notes
+- `actualStartTime`: real check-in time (nullable)
+- `actualEndTime`: real check-out time (nullable)
+
+## Business rules
+
+- `endDateTime` must be after `startDateTime` and a shift cannot be longer than 24 hours.
+- A guard cannot have overlapping shifts. Back-to-back shifts (one ends 08:00, the next starts 08:00) are allowed.
+- New shifts can only be assigned to active guards and active services.
+- Guards and services are never deleted, only deactivated (`active = false`), to keep the shift history.
 
 ## Relationships
 

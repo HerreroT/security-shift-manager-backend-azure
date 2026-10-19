@@ -2,9 +2,6 @@ package com.security.shiftmanager.service;
 
 import com.security.shiftmanager.model.ShiftAssignment;
 import com.security.shiftmanager.repository.ShiftAssignmentRepository;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -50,14 +47,8 @@ public class ShiftAssignmentService {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "ShiftAssignment " + id + " already has a check-out");
         }
-        LocalDateTime now = LocalDateTime.now();
-        shiftAssignment.setActualEndTime(now);
-        shiftAssignment.setTotalHours(calculateTotalHours(shiftAssignment.getActualStartTime(), now));
+        shiftAssignment.setActualEndTime(LocalDateTime.now());
+        shiftAssignment.recalculateTotalHours();
         return shiftAssignmentRepository.save(shiftAssignment);
-    }
-
-    private BigDecimal calculateTotalHours(LocalDateTime start, LocalDateTime end) {
-        BigDecimal minutes = BigDecimal.valueOf(Duration.between(start, end).toMinutes());
-        return minutes.divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
     }
 }

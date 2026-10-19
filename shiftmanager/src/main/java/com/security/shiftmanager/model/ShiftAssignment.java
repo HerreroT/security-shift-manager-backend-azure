@@ -6,16 +6,18 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 @Entity
-@Table(name = "shift_assignments")
+@Table(name = "shift_assignments", indexes = {
+        @Index(name = "idx_shift_guard_start", columnList = "guard_id, startDateTime"),
+        @Index(name = "idx_shift_service_start", columnList = "service_id, startDateTime")
+})
 public class ShiftAssignment {
 
     @Id
@@ -31,13 +33,10 @@ public class ShiftAssignment {
     private Service service;
 
     @Column(nullable = false)
-    private LocalDate date;
+    private LocalDateTime startDateTime;
 
     @Column(nullable = false)
-    private LocalTime startTime;
-
-    @Column(nullable = false)
-    private LocalTime endTime;
+    private LocalDateTime endDateTime;
 
     @Column(nullable = false, precision = 5, scale = 2)
     private BigDecimal totalHours;
@@ -58,18 +57,16 @@ public class ShiftAssignment {
             Long id,
             Guard guard,
             Service service,
-            LocalDate date,
-            LocalTime startTime,
-            LocalTime endTime,
+            LocalDateTime startDateTime,
+            LocalDateTime endDateTime,
             BigDecimal totalHours,
             String notes
     ) {
         this.id = id;
         this.guard = guard;
         this.service = service;
-        this.date = date;
-        this.startTime = startTime;
-        this.endTime = endTime;
+        this.startDateTime = startDateTime;
+        this.endDateTime = endDateTime;
         this.totalHours = totalHours;
         this.notes = notes;
     }
@@ -98,28 +95,20 @@ public class ShiftAssignment {
         this.service = service;
     }
 
-    public LocalDate getDate() {
-        return date;
+    public LocalDateTime getStartDateTime() {
+        return startDateTime;
     }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
+    public void setStartDateTime(LocalDateTime startDateTime) {
+        this.startDateTime = startDateTime;
     }
 
-    public LocalTime getStartTime() {
-        return startTime;
+    public LocalDateTime getEndDateTime() {
+        return endDateTime;
     }
 
-    public void setStartTime(LocalTime startTime) {
-        this.startTime = startTime;
-    }
-
-    public LocalTime getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(LocalTime endTime) {
-        this.endTime = endTime;
+    public void setEndDateTime(LocalDateTime endDateTime) {
+        this.endDateTime = endDateTime;
     }
 
     public BigDecimal getTotalHours() {
@@ -152,5 +141,17 @@ public class ShiftAssignment {
 
     public void setActualEndTime(LocalDateTime actualEndTime) {
         this.actualEndTime = actualEndTime;
+    }
+
+    /**
+     * Recalculates totalHours: real worked time if the guard checked in and out,
+     * otherwise the planned shift duration.
+     */
+    public void recalculateTotalHours() {
+        if (actualStartTime != null && actualEndTime != null) {
+            this.totalHours = HoursCalculator.between(actualStartTime, actualEndTime);
+        } else {
+            this.totalHours = HoursCalculator.between(startDateTime, endDateTime);
+        }
     }
 }
