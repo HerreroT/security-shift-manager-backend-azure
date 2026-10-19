@@ -34,7 +34,7 @@ public class AuthController {
             SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
             var user = securityUser.getUser();
             String token = jwtService.generateToken(user.getEmail());
-            return new LoginResponse(token, user.getId(), user.getUsername(), user.getEmail());
+            return new LoginResponse(token, user.getId(), user.getUsername(), user.getEmail(), user.getRole());
         } catch (BadCredentialsException e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
         }
