@@ -1,0 +1,6 @@
+# JVM crash dumps
+hs_err_pid*.log
+replay_pid*.log
+
+# Local secrets for docker compose
+.env
