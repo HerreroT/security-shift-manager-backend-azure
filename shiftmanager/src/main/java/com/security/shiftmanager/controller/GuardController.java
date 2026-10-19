@@ -1,10 +1,14 @@
 package com.security.shiftmanager.controller;
 
+import com.security.shiftmanager.dto.GuardHoursReport;
 import com.security.shiftmanager.dto.GuardRequest;
 import com.security.shiftmanager.dto.GuardResponse;
 import com.security.shiftmanager.service.GuardService;
+import com.security.shiftmanager.service.ReportService;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import java.util.List;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,9 +27,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class GuardController {
 
     private final GuardService guardService;
+    private final ReportService reportService;
 
-    public GuardController(GuardService guardService) {
+    public GuardController(GuardService guardService, ReportService reportService) {
         this.guardService = guardService;
+        this.reportService = reportService;
     }
 
     @GetMapping
@@ -38,6 +44,15 @@ public class GuardController {
     @GetMapping("/{id}")
     public GuardResponse getById(@PathVariable Long id) {
         return guardService.findById(id);
+    }
+
+    /** Hours worked by the guard. Example: GET /api/guards/1/hours?from=2026-10-01&to=2026-10-31 */
+    @GetMapping("/{id}/hours")
+    public GuardHoursReport getHours(
+            @PathVariable Long id,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return reportService.guardHours(id, from, to);
     }
 
     @PostMapping

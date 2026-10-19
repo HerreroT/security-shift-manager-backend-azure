@@ -2,9 +2,13 @@ package com.security.shiftmanager.controller;
 
 import com.security.shiftmanager.dto.ServiceRequest;
 import com.security.shiftmanager.dto.ServiceResponse;
+import com.security.shiftmanager.dto.ShiftAssignmentResponse;
+import com.security.shiftmanager.service.ReportService;
 import com.security.shiftmanager.service.ServiceService;
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,9 +27,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class ServiceController {
 
     private final ServiceService serviceService;
+    private final ReportService reportService;
 
-    public ServiceController(ServiceService serviceService) {
+    public ServiceController(ServiceService serviceService, ReportService reportService) {
         this.serviceService = serviceService;
+        this.reportService = reportService;
     }
 
     @GetMapping
@@ -38,6 +44,14 @@ public class ServiceController {
     @GetMapping("/{id}")
     public ServiceResponse getById(@PathVariable Long id) {
         return serviceService.findById(id);
+    }
+
+    /** Who was working there at that moment. Example: GET /api/services/1/on-duty?at=2026-10-12T16:00 */
+    @GetMapping("/{id}/on-duty")
+    public List<ShiftAssignmentResponse> getOnDuty(
+            @PathVariable Long id,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime at) {
+        return reportService.onDuty(id, at);
     }
 
     @PostMapping

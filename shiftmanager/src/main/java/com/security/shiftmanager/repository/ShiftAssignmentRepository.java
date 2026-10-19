@@ -33,6 +33,38 @@ public interface ShiftAssignmentRepository extends JpaRepository<ShiftAssignment
             @Param("to") LocalDateTime to);
 
     /**
+     * Shifts of a service that are running at the given instant (start inclusive, end exclusive).
+     */
+    @Query("""
+            select s from ShiftAssignment s
+            join fetch s.guard
+            join fetch s.service
+            where s.service.id = :serviceId
+              and s.startDateTime <= :at
+              and s.endDateTime > :at
+            order by s.startDateTime
+            """)
+    List<ShiftAssignment> findOnDuty(@Param("serviceId") Long serviceId, @Param("at") LocalDateTime at);
+
+    /**
+     * Shifts that start inside [from, to). Used for hour reports so a shift is counted only once.
+     * The guard filter is optional.
+     */
+    @Query("""
+            select s from ShiftAssignment s
+            join fetch s.guard
+            join fetch s.service
+            where (:guardId is null or s.guard.id = :guardId)
+              and s.startDateTime >= :from
+              and s.startDateTime < :to
+            order by s.startDateTime
+            """)
+    List<ShiftAssignment> findStartingBetween(
+            @Param("guardId") Long guardId,
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to);
+
+    /**
      * Shifts of a guard that overlap [start, end). Back-to-back shifts do not overlap.
      */
     @Query("""
