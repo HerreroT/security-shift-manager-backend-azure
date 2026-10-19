@@ -1,0 +1,41 @@
+# Backend + PostgreSQL. Usage:
+#   cp .env.example .env    (and change the secrets)
+#   docker compose up -d --build
+# The API is then available at http://localhost:8090 (Swagger: /swagger-ui.html).
+services:
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shiftmanager
+      POSTGRES_USER: ${DB_USERNAME:-shiftmanager}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d shiftmanager"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./shiftmanager
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      DB_URL: jdbc:postgresql://db:5432/shiftmanager
+      DB_USERNAME: ${DB_USERNAME:-shiftmanager}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (at least 32 characters)}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@shiftmanager.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in .env}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-false}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
+    ports:
+      - "${PORT:-8090}:8090"
+
+volumes:
+  pgdata:

@@ -13,7 +13,8 @@ La app mobile está en [security-shift-manager-mobile](https://github.com/Herrer
 ## Tecnologías
 
 - Java 21 + Spring Boot 3.5
-- Spring Data JPA + H2 (en memoria)
+- Spring Data JPA + PostgreSQL (H2 en memoria para desarrollo y tests)
+- Flyway para las migraciones de la base
 - Spring Security con JWT
 - Bean Validation
 - springdoc-openapi (Swagger UI)
@@ -30,9 +31,47 @@ El servidor queda en `http://localhost:8090`. El puerto se cambia con la variabl
 Al arrancar se cargan:
 
 - Un usuario administrador: `admin@shiftmanager.com` / `admin123`
-- Datos de ejemplo: 8 guardias, 4 servicios y turnos del mes anterior y del actual, incluidos turnos nocturnos. Se desactivan con `app.seed-demo-data=false`.
+- Datos de ejemplo: 8 guardias, 4 servicios y turnos del mes anterior y del actual, incluidos turnos nocturnos. Se desactivan con `SEED_DEMO_DATA=false`.
 
-La base es H2 en memoria, así que los datos se reinician cada vez que se reinicia el servidor.
+Por defecto la base es H2 en memoria, así que no hace falta instalar nada, pero los datos se reinician cada vez que se reinicia el servidor.
+
+### Con PostgreSQL
+
+El esquema lo crean las migraciones de Flyway (`src/main/resources/db/migration`), tanto en H2 como en PostgreSQL. Para usar PostgreSQL, activá el perfil `postgres` e indicá la conexión:
+
+```bash
+# Windows PowerShell
+$env:SPRING_PROFILES_ACTIVE="postgres"
+$env:DB_URL="jdbc:postgresql://localhost:5432/shiftmanager"
+$env:DB_USERNAME="postgres"
+$env:DB_PASSWORD="tu-password"
+./gradlew bootRun
+```
+
+La base `shiftmanager` tiene que existir: `CREATE DATABASE shiftmanager;`.
+
+### Variables de entorno
+
+| Variable | Default | Uso |
+|---|---|---|
+| `PORT` | `8090` | Puerto HTTP |
+| `SPRING_PROFILES_ACTIVE` | (vacío = H2) | `postgres` para usar PostgreSQL |
+| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | `localhost:5432/shiftmanager` | Conexión a PostgreSQL |
+| `JWT_SECRET` | secreto de desarrollo | Firma de los tokens (mínimo 32 caracteres) |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | `admin@shiftmanager.com` / `admin123` | Primer administrador; se crea solo si no hay usuarios |
+| `SEED_DEMO_DATA` | `true` | Carga datos de ejemplo si no hay guardias |
+| `CORS_ALLOWED_ORIGINS` | `*` | Orígenes permitidos por CORS |
+
+## Deploy con Docker
+
+La rama `deploy` es la que se despliega. Con Docker:
+
+```bash
+cp .env.example .env      # cambiar DB_PASSWORD, JWT_SECRET y ADMIN_PASSWORD
+docker compose up -d --build
+```
+
+Esto levanta PostgreSQL 18 con un volumen persistente y el backend en el puerto 8090. Flyway crea las tablas en el primer arranque.
 
 ### Conectarse desde la app mobile (Expo Go)
 
