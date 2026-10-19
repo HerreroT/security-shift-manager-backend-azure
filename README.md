@@ -8,7 +8,7 @@ Permite responder preguntas como:
 - ¿Cuántas horas trabajó cada guardia en el mes?
 - ¿Qué turnos tiene un servicio en un día determinado?
 
-La app mobile está en [security-shift-manager-mobile](https://github.com/HerreroT/security-shift-manager-mobile).
+La app mobile está en [security-shift-manager-mobile-azure](https://github.com/HerreroT/security-shift-manager-mobile-azure).
 
 ## Tecnologías
 
