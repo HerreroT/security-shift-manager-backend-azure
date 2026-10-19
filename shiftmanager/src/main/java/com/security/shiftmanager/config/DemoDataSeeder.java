@@ -1,11 +1,14 @@
 package com.security.shiftmanager.config;
 
 import com.security.shiftmanager.model.Guard;
+import com.security.shiftmanager.model.Role;
 import com.security.shiftmanager.model.Service;
 import com.security.shiftmanager.model.ShiftAssignment;
+import com.security.shiftmanager.model.User;
 import com.security.shiftmanager.repository.GuardRepository;
 import com.security.shiftmanager.repository.ServiceRepository;
 import com.security.shiftmanager.repository.ShiftAssignmentRepository;
+import com.security.shiftmanager.repository.UserRepository;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -16,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,17 +38,26 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final LocalTime DAY_START = LocalTime.of(8, 0);
     private static final LocalTime NIGHT_START = LocalTime.of(20, 0);
 
+    private static final String SUPERVISOR_EMAIL = "supervisor@shiftmanager.com";
+    private static final String SUPERVISOR_PASSWORD = "supervisor123";
+
     private final GuardRepository guardRepository;
     private final ServiceRepository serviceRepository;
     private final ShiftAssignmentRepository shiftAssignmentRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public DemoDataSeeder(
             GuardRepository guardRepository,
             ServiceRepository serviceRepository,
-            ShiftAssignmentRepository shiftAssignmentRepository) {
+            ShiftAssignmentRepository shiftAssignmentRepository,
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder) {
         this.guardRepository = guardRepository;
         this.serviceRepository = serviceRepository;
         this.shiftAssignmentRepository = shiftAssignmentRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -52,6 +65,13 @@ public class DemoDataSeeder implements CommandLineRunner {
     public void run(String... args) {
         if (guardRepository.count() > 0) {
             return;
+        }
+
+        // Read-only user to try the SUPERVISOR role.
+        if (userRepository.findByEmail(SUPERVISOR_EMAIL).isEmpty()) {
+            userRepository.save(new User(null, "supervisor", SUPERVISOR_EMAIL,
+                    passwordEncoder.encode(SUPERVISOR_PASSWORD), true, Role.SUPERVISOR));
+            log.info("Seeded demo supervisor user -> email: {}, password: {}", SUPERVISOR_EMAIL, SUPERVISOR_PASSWORD);
         }
 
         List<Guard> guards = guardRepository.saveAll(List.of(

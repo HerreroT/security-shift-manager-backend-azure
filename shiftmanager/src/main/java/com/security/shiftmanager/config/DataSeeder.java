@@ -1,5 +1,6 @@
 package com.security.shiftmanager.config;
 
+import com.security.shiftmanager.model.Role;
 import com.security.shiftmanager.model.User;
 import com.security.shiftmanager.repository.UserRepository;
 import org.slf4j.Logger;
@@ -40,7 +41,7 @@ public class DataSeeder implements CommandLineRunner {
         if (userRepository.count() > 0) {
             return;
         }
-        User admin = new User(null, "admin", adminEmail, passwordEncoder.encode(adminPassword), true);
+        User admin = new User(null, "admin", adminEmail, passwordEncoder.encode(adminPassword), true, Role.ADMIN);
         userRepository.save(admin);
         if (DEV_PASSWORD.equals(adminPassword)) {
             log.info("Seeded dev admin user -> email: {}, password: {}", adminEmail, adminPassword);

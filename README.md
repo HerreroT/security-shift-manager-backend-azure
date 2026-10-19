@@ -113,6 +113,17 @@ Todos los endpoints de `/api/**` (salvo `/api/auth/**`) requieren el header `Aut
 | POST | `/api/shift-assignments/{id}/check-in`, `/check-out` | Registro del horario real |
 | GET | `/api/reports/monthly-hours?month=2026-10` | Horas del mes por guardia |
 | GET | `/api/reports/monthly-hours.csv?month=2026-10` | El mismo reporte en CSV (para Excel) |
+| GET/POST | `/api/users` | Listado y alta de usuarios (solo ADMIN) |
+| DELETE / PATCH | `/api/users/{id}`, `/api/users/{id}/activate` | Desactivar / reactivar usuarios (solo ADMIN) |
+
+### Roles
+
+| Rol | Permisos |
+|---|---|
+| `ADMIN` | Todo: guardias, servicios, turnos, check-in/out y usuarios |
+| `SUPERVISOR` | Solo lectura: consulta guardias, servicios, turnos y reportes. Cualquier cambio devuelve 403 |
+
+Con los datos de ejemplo se crea también un supervisor: `supervisor@shiftmanager.com` / `supervisor123`.
 
 ### Ejemplo: ¿quién estuvo en el Barrio Belgrano el 12/10 a las 16 hs?
 
