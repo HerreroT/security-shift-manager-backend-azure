@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.5.13'
+	id 'org.springframework.boot' version '3.5.16'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -17,12 +17,22 @@ repositories {
 	mavenCentral()
 }
 
+// Security patches newer than the ones managed by Spring Boot 3.5.16 (found with Grype, see docs/seguridad.md).
+// Patch versions of the same line (commons-lang3 3.20.0 is the version springdoc itself requests).
+// Remove each one when Spring Boot manages that version or a newer one.
+ext['tomcat.version'] = '10.1.61'
+ext['jackson-bom.version'] = '2.21.7'
+ext['postgresql.version'] = '42.7.12'
+ext['log4j2.version'] = '2.25.5'
+ext['commons-lang3.version'] = '3.20.0'
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.17'
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
@@ -33,6 +43,11 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+// Adds build-info.properties to the jar so /actuator/info shows the artifact version and build time.
+springBoot {
+	buildInfo()
 }
 
 tasks.named('test') {

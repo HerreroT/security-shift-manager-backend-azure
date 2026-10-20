@@ -50,15 +50,28 @@ $env:DB_PASSWORD="tu-password"
 
 La base `shiftmanager` tiene que existir: `CREATE DATABASE shiftmanager;`.
 
+> En Windows, PostgreSQL 18 rechaza la zona horaria que Java toma del sistema (`America/Buenos_Aires`). Si al conectar aparece `invalid value for parameter "TimeZone"`, arrancá con `-Duser.timezone=America/Argentina/Buenos_Aires` (la imagen Docker ya la trae configurada).
+
+### Perfiles
+
+| Perfil | Base de datos | Secretos | Uso |
+|---|---|---|---|
+| (ninguno) | H2 en memoria | Valores de desarrollo | Correr y probar sin instalar nada |
+| `postgres` | PostgreSQL | Valores de desarrollo si faltan | PostgreSQL local |
+| `prod` | PostgreSQL | **Obligatorios**: si falta `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, `ADMIN_EMAIL` o `ADMIN_PASSWORD`, la app no arranca | Docker y Azure |
+
 ### Variables de entorno
 
 | Variable | Default | Uso |
 |---|---|---|
 | `PORT` | `8090` | Puerto HTTP |
-| `SPRING_PROFILES_ACTIVE` | (vacío = H2) | `postgres` para usar PostgreSQL |
-| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | `localhost:5432/shiftmanager` | Conexión a PostgreSQL |
-| `JWT_SECRET` | secreto de desarrollo | Firma de los tokens (mínimo 32 caracteres) |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | `admin@shiftmanager.com` / `admin123` | Primer administrador; se crea solo si no hay usuarios |
+| `SPRING_PROFILES_ACTIVE` | (vacío = H2) | `postgres` o `prod` |
+| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | `localhost:5432/shiftmanager` (sin default en `prod`) | Conexión a PostgreSQL |
+| `DB_POOL_MAX_SIZE`, `DB_POOL_MIN_IDLE` | `5` / `2` | Tamaño del pool de conexiones HikariCP (ver `application.properties`) |
+| `JWT_SECRET` | secreto de desarrollo (sin default en `prod`) | Firma de los tokens (mínimo 32 caracteres) |
+| `JWT_EXPIRATION_MS` | `86400000` (24 h) | Duración del token |
+| `APP_VERSION`, `GIT_COMMIT` | `dev` / `unknown` | Versión y commit que muestra `/actuator/info` (los carga la imagen Docker) |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | `admin@shiftmanager.com` / `admin123` | Primer administrador; se crea si no existe ningún usuario ADMIN |
 | `SEED_DEMO_DATA` | `true` | Carga datos de ejemplo si no hay guardias |
 | `CORS_ALLOWED_ORIGINS` | `*` | Orígenes permitidos por CORS |
 
@@ -72,6 +85,8 @@ docker compose up -d --build
 ```
 
 Esto levanta PostgreSQL 18 con un volumen persistente y el backend en el puerto 8090. Flyway crea las tablas en el primer arranque.
+
+La imagen es distroless (sin shell, usuario sin privilegios) y lleva etiquetas OCI con la versión y el commit. Detalle del Dockerfile, comandos para detener, reconstruir, ver logs y borrar sin perder datos: [docs/docker.md](docs/docker.md).
 
 ### Conectarse desde la app mobile (Expo Go)
 
@@ -95,11 +110,22 @@ Con el servidor corriendo, la documentación está en **http://localhost:8090/sw
 
 Todos los endpoints de `/api/**` (salvo `/api/auth/**`) requieren el header `Authorization: Bearer <token>`.
 
+### Salud y métricas (Spring Boot Actuator)
+
+| Endpoint | Acceso | Para qué |
+|---|---|---|
+| `GET /actuator/health` | Público | Estado general (`UP` / `DOWN`); con token de ADMIN muestra el detalle (base de datos, disco) |
+| `GET /actuator/health/liveness` | Público | ¿El proceso está vivo? (probe de liveness) |
+| `GET /actuator/health/readiness` | Público | ¿Puede atender tráfico? Incluye la conexión a la base (probe de readiness) |
+| `GET /actuator/info` | Público | Versión y commit de la imagen que está corriendo |
+| `GET /actuator/metrics/**` | ADMIN | Métricas: `http.server.requests`, `hikaricp.connections.*`, `jvm.*` |
+
 ### Endpoints principales
 
 | Método | Endpoint | Descripción |
 |---|---|---|
 | POST | `/api/auth/login` | Login, devuelve el JWT |
+| GET | `/api/auth/me` | Usuario dueño del token (sirve para verificar que el token sigue siendo válido) |
 | GET | `/api/guards?search=&active=` | Listado y búsqueda de guardias (nombre, apellido o DNI) |
 | GET/POST/PUT | `/api/guards`, `/api/guards/{id}` | Alta, consulta y edición de guardias |
 | DELETE / PATCH | `/api/guards/{id}`, `/api/guards/{id}/activate` | Baja lógica y reactivación |
@@ -166,3 +192,5 @@ Ver [DOMAIN_MODEL.md](shiftmanager/DOMAIN_MODEL.md). En resumen:
 cd shiftmanager
 ./gradlew test
 ```
+
+La colección de Postman con las pruebas de JWT, roles, salud y métricas está en [docs/postman](docs/postman). El detalle de la seguridad (JWT, roles, anotaciones y pruebas) está en [docs/seguridad.md](docs/seguridad.md).

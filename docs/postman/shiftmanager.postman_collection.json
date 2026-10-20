@@ -1,0 +1,414 @@
+{
+  "info": {
+    "name": "Security Shift Manager",
+    "description": "Pruebas de autenticación JWT, roles, salud y endpoints principales. Elegí el environment Local o Azure y completá adminPassword en el environment (no se guarda en el repositorio). La primera ejecución crea el usuario {{supervisorEmail}} con supervisorPassword; usá siempre la misma supervisorPassword en ese environment (si ya existe, el alta responde 409 y el login sigue funcionando).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "supervisorToken",
+      "value": ""
+    },
+    {
+      "key": "supervisorEmail",
+      "value": "supervisor.postman@shiftmanager.com"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Salud",
+      "item": [
+        {
+          "name": "Health (público)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/actuator/health"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status 200 y UP', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().status).to.eql('UP'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Readiness (incluye la base de datos)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/actuator/health/readiness"
+          }
+        },
+        {
+          "name": "Info (versión y commit desplegados)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/actuator/info"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Autenticación JWT",
+      "item": [
+        {
+          "name": "Login correcto (guarda el token)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('token', body.token);",
+                  "const payload = JSON.parse(atob(body.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));",
+                  "console.log('Payload del JWT', payload, 'vence:', new Date(payload.exp * 1000).toISOString());",
+                  "pm.test('el token tiene sub, iat y exp', () => pm.expect(payload).to.have.all.keys('sub', 'iat', 'exp'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login incorrecto (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"incorrecta\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login sin datos (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Usuario autenticado (/me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/me"
+          }
+        },
+        {
+          "name": "Sin token (401)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/guards"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Token alterado: un carácter de la firma cambiado (401)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tamperedToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/guards"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Changes one character inside the signature. (Appending a character is not a valid test: base64url",
+                  "// decoders drop a lone trailing character, so the decoded signature stays the same.)",
+                  "const [h, p, s] = pm.collectionVariables.get('token').split('.');",
+                  "const i = 10;",
+                  "const changed = s[i] === 'A' ? 'B' : 'A';",
+                  "pm.variables.set('tamperedToken', `${h}.${p}.${s.slice(0, i)}${changed}${s.slice(i + 1)}`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Roles",
+      "item": [
+        {
+          "name": "Crear supervisor (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"supervisor.postman\",\n  \"email\": \"{{supervisorEmail}}\",\n  \"password\": \"{{supervisorPassword}}\",\n  \"role\": \"SUPERVISOR\"\n}"
+            },
+            "url": "{{baseUrl}}/api/users"
+          }
+        },
+        {
+          "name": "Login supervisor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{supervisorEmail}}\",\n  \"password\": \"{{supervisorPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('supervisorToken', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Supervisor lee guardias (200)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{supervisorToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/guards"
+          }
+        },
+        {
+          "name": "Supervisor intenta crear un guardia (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{supervisorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Juan\",\n  \"lastName\": \"Pérez\",\n  \"dni\": \"30111222\",\n  \"phone\": \"1155550000\"\n}"
+            },
+            "url": "{{baseUrl}}/api/guards"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Negocio",
+      "item": [
+        {
+          "name": "Listar guardias",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/guards"
+          }
+        },
+        {
+          "name": "Listar servicios",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/services"
+          }
+        },
+        {
+          "name": "¿Quién estuvo? (servicio 1, fecha y hora)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/services/1/on-duty?at=2026-10-12T16:00"
+          }
+        },
+        {
+          "name": "Reporte mensual de horas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reports/monthly-hours?month=2026-10"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Salud detallada y métricas (ADMIN)",
+      "item": [
+        {
+          "name": "Health con detalle (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/actuator/health"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('la base de datos está UP', () => pm.expect(pm.response.json().components.db.status).to.eql('UP'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Peticiones al login (cantidad y tiempos)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/actuator/metrics/http.server.requests?tag=uri:/api/auth/login"
+          }
+        },
+        {
+          "name": "Conexiones activas de HikariCP",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/actuator/metrics/hikaricp.connections.active"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -55,8 +55,13 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/auth/**", "/hello", "/error").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // Health and info are read by Docker and Azure probes without a token;
+                        // the other Actuator endpoints (metrics) expose internals and are ADMIN only.
+                        .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
+                        .requestMatchers("/actuator/**").hasRole("ADMIN")
                         // ADMIN manages users and is the only one who can change data;
                         // SUPERVISOR can only read (guards, services, shifts and reports).
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
