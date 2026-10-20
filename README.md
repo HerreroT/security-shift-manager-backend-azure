@@ -19,6 +19,8 @@ El backend corre en **Azure Container Apps** con PostgreSQL 18 (Azure Database f
 
 | Documento | Contenido |
 |---|---|
+| [docs/arquitectura.md](docs/arquitectura.md) | Arquitectura, tecnologías, archivos creados y modificados |
+| [docs/guia-parcial.md](docs/guia-parcial.md) | Simulacro de defensa y respuestas a las preguntas del parcial |
 | [docs/azure.md](docs/azure.md) | Recursos, costos, creación por Portal y CLI, Service Principal, secretos, despliegue manual |
 | [docs/ci-cd.md](docs/ci-cd.md) | Pipeline, condiciones de despliegue, versionado, rollback y guía de GitHub |
 | [docs/docker.md](docs/docker.md) | Dockerfile multietapa y Docker Compose |
