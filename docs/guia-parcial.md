@@ -1,6 +1,6 @@
 # Guía para el parcial
 
-Cómo explicar y demostrar todo lo implementado. Para el detalle de cada tema: [arquitectura](arquitectura.md), [docker](docker.md), [azure](azure.md), [ci-cd](ci-cd.md), [seguridad](seguridad.md), [monitoreo](monitoreo.md).
+Cómo explicar y demostrar todo lo implementado. Para el detalle de cada tema: [arquitectura](arquitectura.md), [docker](docker.md), [azure](azure.md), [ci-cd](ci-cd.md), [seguridad](seguridad.md), [monitoreo](monitoreo.md). Versión resumida, con qué decir en cada pedido: [defensa-paso-a-paso](defensa-paso-a-paso.md).
 
 ## Datos a mano
 
