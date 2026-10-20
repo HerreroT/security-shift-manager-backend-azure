@@ -74,7 +74,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         if (userRepository.findByEmail(SUPERVISOR_EMAIL).isEmpty()) {
             userRepository.save(new User(null, "supervisor", SUPERVISOR_EMAIL,
                     passwordEncoder.encode(SUPERVISOR_PASSWORD), true, Role.SUPERVISOR));
-            log.info("Seeded demo supervisor user -> email: {}, password: {}", SUPERVISOR_EMAIL, SUPERVISOR_PASSWORD);
+            log.info("Seeded demo supervisor user -> email: {} (development password, see README)", SUPERVISOR_EMAIL);
         }
 
         List<Guard> guards = guardRepository.saveAll(List.of(

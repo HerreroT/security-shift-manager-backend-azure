@@ -247,7 +247,7 @@ Formato: **Técnica** (respuesta precisa) · **Para decir** (versión oral) · *
 
 **37. ¿Qué diferencias hay entre Grype y Trivy?** Los dos escanean imágenes. Trivy además analiza IaC, secretos y licencias, y usa la severidad que asigna la distribución (Debian) en lugar del CVSS de NVD; por eso sobre la imagen final dio 64 (4 altas) contra 72 (21 altas) de Grype. Coinciden en las 2 críticas.
 
-**38. ¿Qué es CodeQL?** Análisis estático (SAST) de GitHub: analiza nuestro código fuente buscando patrones de vulnerabilidades (inyección SQL, XSS, crypto débil, inyección en workflows). Resultado: 0 hallazgos con 120 reglas Java y 23 de Actions. `codeql.yml`, Security → Code scanning. No bloquea ataques en ejecución.
+**38. ¿Qué es CodeQL?** Análisis estático (SAST) de GitHub: analiza nuestro código fuente buscando patrones de vulnerabilidades (inyección SQL, XSS, crypto débil, inyección en workflows). Resultado con 120 reglas Java y 23 de Actions: 7 alertas; corregidas 6 (contraseña en un log y 5 actions sin fijar a SHA) y descartada 1 con justificación (CSRF no aplica a una API con JWT en header). `codeql.yml`, Security → Code scanning. No bloquea ataques en ejecución.
 
 **39. ¿Qué diferencia hay entre CodeQL y Grype?** CodeQL mira **nuestro código** (errores de programación); Grype mira **los paquetes de la imagen** (CVE conocidos en librerías y sistema operativo). Se complementan.
 

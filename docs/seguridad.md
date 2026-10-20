@@ -190,7 +190,15 @@ Archivo: `.github/workflows/codeql.yml`. Resultados: repositorio → **Security*
 
 **Configuración**: Java (`build-mode: none`, analiza las fuentes sin compilar) y los workflows de GitHub Actions, con el conjunto de consultas `security-extended`. Corre en cada push y PR a `dev` y `main`, todos los lunes y a mano. Requiere el permiso `security-events: write` para subir los resultados (formato SARIF). En repositorios públicos es gratis; en privados requiere GitHub Code Security.
 
-**Resultado** (CodeQL 2.27.2, 2026-10-20): 120 reglas de seguridad para Java y 23 para Actions, **0 hallazgos**. Era esperable por lo revisado a mano: las consultas a la base son JPQL con parámetros, las entradas se validan con Bean Validation y no se arman comandos, rutas ni HTML con datos del usuario.
+**Resultado** (CodeQL 2.27.2, 2026-10-20, análisis completo de `main`; los análisis de un PR muestran solo las alertas *nuevas* respecto de la rama base, por eso el primero dio 0): 120 reglas de seguridad para Java y 23 para Actions, **7 alertas**:
+
+| Alerta | Severidad | Dónde | Resolución |
+|---|---|---|---|
+| `java/sensitive-log` | Alta | `DataSeeder.java` | **Corregida**: el log mostraba la contraseña del admin cuando era la de desarrollo (`admin123`). Ahora nunca se loguea una contraseña (también se quitó del log del supervisor demo) |
+| `java/spring-disabled-csrf-protection` | Alta | `SecurityConfig.java` | **Descartada con justificación** (*won't fix*): la API no usa sesión ni cookies; el JWT viaja en el header `Authorization`, que el navegador no envía automáticamente a otro sitio, así que un ataque CSRF no tiene con qué autenticarse |
+| `actions/unpinned-tag` ×5 | Media | `ci-cd.yml` | **Corregidas**: las actions de terceros (`gradle/actions`, `anchore/scan-action`, `azure/login`) se referencian por el SHA del commit en lugar del tag, porque un tag se puede mover a otro código (ataque a la cadena de suministro). Las de `actions/*` y `github/*` son de GitHub y se dejan por versión |
+
+No hubo alertas de inyección SQL, XSS, rutas o comandos: las consultas son JPQL con parámetros, las entradas se validan con Bean Validation y no se arman comandos, rutas ni HTML con datos del usuario.
 
 > CodeQL **no bloquea ataques mientras la aplicación corre**: analiza el código antes de desplegarlo. La protección en ejecución contra inyección SQL la dan las consultas parametrizadas; CodeQL verifica que no haya consultas armadas con texto del usuario.
 
