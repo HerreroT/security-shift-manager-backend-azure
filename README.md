@@ -163,7 +163,7 @@ Todos los endpoints de `/api/**` (salvo `/api/auth/**`) requieren el header `Aut
 | `ADMIN` | Todo: guardias, servicios, turnos, check-in/out y usuarios |
 | `SUPERVISOR` | Solo lectura: consulta guardias, servicios, turnos y reportes. Cualquier cambio devuelve 403 |
 
-Con los datos de ejemplo se crea también un supervisor: `supervisor@shiftmanager.com` / `supervisor123`.
+Con los datos de ejemplo se crea también un supervisor: `supervisor@shiftmanager.com` / `supervisor123` (solo para uso local; en Azure está desactivado porque esa contraseña es pública).
 
 ### Ejemplo: ¿quién estuvo en el Barrio Belgrano el 12/10 a las 16 hs?
 
