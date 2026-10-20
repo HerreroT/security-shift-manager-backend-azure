@@ -1,3 +1,4 @@
+# Build output and IDE files: the image compiles everything from source.
 .gradle
 build
 bin
@@ -5,3 +6,15 @@ out
 .idea
 .vscode
 *.iml
+
+# Never send secrets or git history to the build context.
+.env
+.env.*
+.git
+.gitignore
+.gitattributes
+
+# Not needed inside the image.
+Dockerfile
+.dockerignore
+*.md
