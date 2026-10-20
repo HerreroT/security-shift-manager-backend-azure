@@ -12,6 +12,33 @@ URL del backend: `https://ca-shiftmanager-backend.lemonground-a6322200.chilecent
 
 ---
 
+## Preparar una PC desde cero (una sola vez)
+
+Para la demo no hace falta Docker ni Java: la imagen la construye GitHub Actions y Azure la ejecuta.
+
+```powershell
+winget install Git.Git
+winget install Microsoft.AzureCLI
+winget install GitHub.cli
+winget install Python.Python.3.13
+# cerrar y volver a abrir PowerShell
+az login                                         # cuenta de la facultad, suscripción "Azure for Students"
+gh auth login                                    # GitHub.com, HTTPS, navegador, cuenta HerreroT
+git config --global user.name "HerreroT"
+git config --global user.email "t.herrero@alumno.um.edu.ar"
+cd $HOME\Desktop
+gh repo clone HerreroT/security-shift-manager-backend-azure
+cd security-shift-manager-backend-azure
+git checkout dev
+python scripts/azure_manager.py version          # si dice OK, está todo listo
+```
+
+Si `az` "no se reconoce": cerrá todas las ventanas de PowerShell y abrí una nueva, o usá la ruta completa `& "C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin\az.cmd" login`.
+
+Para Postman y la app hace falta la contraseña del admin: está en `%USERPROFILE%\.shiftmanager\azure-secrets.env` (copiar esa carpeta a mano, nunca por el repo ni por chat).
+
+---
+
 ## 0. Antes de empezar (10 minutos antes)
 
 ```powershell
@@ -243,6 +270,26 @@ az containerapp secret list -g rg-shiftmanager -n ca-shiftmanager-backend --quer
 
 **Mostrá**: Expo Go en el celular (`npx expo start -c` en el repo mobile, con el `.env` apuntando a Azure).
 
+## 20. "Levantalo en tu máquina" (local con Docker, sin Azure)
+
+Requiere Docker Desktop abierto.
+
+```powershell
+Copy-Item .env.example .env
+notepad .env                                     # completar contraseñas y JWT_SECRET (64+ caracteres); si el 8090 está ocupado, cambiar PORT
+docker compose up -d --build                     # construye la imagen y levanta backend + PostgreSQL
+docker compose ps                                # los dos "healthy"
+curl.exe http://localhost:8090/actuator/health   # {"status":"UP"}
+docker compose logs -f backend                   # logs (Ctrl+C para salir)
+docker compose down                              # apagar (los datos quedan en el volumen)
+```
+
+**Decí**: *"Es la misma imagen que corre en Azure, con el mismo perfil prod; solo cambia la configuración, que viene del .env. La base no expone puerto al exterior: el backend la ve por la red interna de Compose."* Detalle en [docker.md](docker.md).
+
+## 21. Preguntas teóricas
+
+Para cualquier otra pregunta (qué es CI/CD, CVE, CVSS, HikariCP, UserDetailsService, 12 factores, qué hacer si falla el pipeline, etc.): las 50 respuestas de [guia-parcial.md](guia-parcial.md), cada una con la versión técnica, la versión para decir y dónde mostrarla.
+
 ---
 
 ## Si algo sale mal
@@ -252,6 +299,7 @@ az containerapp secret list -g rg-shiftmanager -n ca-shiftmanager-backend --quer
 | La URL tarda mucho la primera vez | Es el arranque en frío (0 réplicas). Esperá un minuto; para evitarlo: `scale 1` |
 | La URL da 404 | La app está detenida: `python scripts/azure_manager.py start` |
 | health da `DOWN` o el login da 503 | La base está apagada: `az postgres flexible-server start -g rg-shiftmanager -n psql-shiftmanager-th` |
+| `az` no se reconoce | Cerrar y abrir PowerShell, o la ruta completa `& "C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin\az.cmd" login` |
 | `az` pide login o da error de sesión | `az login` y elegir *Azure for Students* |
 | `gh` da error de autenticación | `gh auth login` |
 | El run de Actions falla | Abrir el job en rojo y leer el paso que falló, o `gh run view --log-failed`. La versión anterior sigue funcionando en Azure. Corregir y volver a subir, o **Re-run failed jobs** |
