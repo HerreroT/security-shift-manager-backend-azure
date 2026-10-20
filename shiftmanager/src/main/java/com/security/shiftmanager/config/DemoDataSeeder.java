@@ -18,6 +18,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -30,6 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
  * Coverage: two neighborhoods with 24 hs coverage (day 08-20 and night 20-08, three guards each
  * rotating) and an office building Monday to Friday 08-16.
  */
+// Runs after DataSeeder, so the administrator always exists before the demo supervisor is added.
+@Order(2)
 @Component
 @ConditionalOnProperty(name = "app.seed-demo-data", havingValue = "true")
 public class DemoDataSeeder implements CommandLineRunner {

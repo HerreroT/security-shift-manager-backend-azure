@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Security Shift Manager",
-    "description": "Pruebas de autenticación JWT, roles, salud y endpoints principales. Elegí el environment Local o Azure y completá adminPassword en el environment (no se guarda en el repositorio).",
+    "description": "Pruebas de autenticación JWT, roles, salud y endpoints principales. Elegí el environment Local o Azure y completá adminPassword en el environment (no se guarda en el repositorio). La primera ejecución crea el usuario {{supervisorEmail}} con supervisorPassword; usá siempre la misma supervisorPassword en ese environment (si ya existe, el alta responde 409 y el login sigue funcionando).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -12,6 +12,10 @@
     {
       "key": "supervisorToken",
       "value": ""
+    },
+    {
+      "key": "supervisorEmail",
+      "value": "supervisor.postman@shiftmanager.com"
     }
   ],
   "item": [
@@ -161,18 +165,31 @@
           ]
         },
         {
-          "name": "Token alterado (401)",
+          "name": "Token alterado: un carácter de la firma cambiado (401)",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{token}}x"
+                "value": "Bearer {{tamperedToken}}"
               }
             ],
             "url": "{{baseUrl}}/api/guards"
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Changes one character inside the signature. (Appending a character is not a valid test: base64url",
+                  "// decoders drop a lone trailing character, so the decoded signature stays the same.)",
+                  "const [h, p, s] = pm.collectionVariables.get('token').split('.');",
+                  "const i = 10;",
+                  "const changed = s[i] === 'A' ? 'B' : 'A';",
+                  "pm.variables.set('tamperedToken', `${h}.${p}.${s.slice(0, i)}${changed}${s.slice(i + 1)}`);"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -204,7 +221,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"supervisor.demo\",\n  \"email\": \"supervisor.demo@shiftmanager.com\",\n  \"password\": \"{{supervisorPassword}}\",\n  \"role\": \"SUPERVISOR\"\n}"
+              "raw": "{\n  \"username\": \"supervisor.postman\",\n  \"email\": \"{{supervisorEmail}}\",\n  \"password\": \"{{supervisorPassword}}\",\n  \"role\": \"SUPERVISOR\"\n}"
             },
             "url": "{{baseUrl}}/api/users"
           }
@@ -221,7 +238,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"supervisor.demo@shiftmanager.com\",\n  \"password\": \"{{supervisorPassword}}\"\n}"
+              "raw": "{\n  \"email\": \"{{supervisorEmail}}\",\n  \"password\": \"{{supervisorPassword}}\"\n}"
             },
             "url": "{{baseUrl}}/api/auth/login"
           },
