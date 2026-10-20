@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -44,6 +45,10 @@ public class AuthController {
             String token = jwtService.generateToken(user.getEmail());
             log.info("Login succeeded for user id={} role={}", user.getId(), user.getRole());
             return new LoginResponse(token, user.getId(), user.getUsername(), user.getEmail(), user.getRole());
+        } catch (InternalAuthenticationServiceException e) {
+            // The user could not be loaded (e.g. the database is down): not a credentials problem.
+            log.error("Login could not check the credentials", e);
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Service temporarily unavailable");
         } catch (AuthenticationException e) {
             // Same answer for a wrong password, an unknown email or a deactivated user,
             // so the response does not reveal which accounts exist.
