@@ -181,3 +181,40 @@ Se analizó la misma imagen con Trivy 0.76.0 (`docker run aquasec/trivy image sh
 | Extra | EPSS y "risk" en la tabla | Detecta secretos y malas configuraciones |
 
 Las dos herramientas coinciden en lo importante: las dos críticas de Spring MVC y que la imagen final no tiene nada corregible pendiente. Para el pipeline se usa Grype porque es la herramienta vista en clase.
+
+## Análisis estático con CodeQL
+
+Archivo: `.github/workflows/codeql.yml`. Resultados: repositorio → **Security** → **Code scanning**.
+
+**Qué es**: CodeQL (GitHub) convierte el código fuente en una base de datos consultable y ejecuta consultas que buscan patrones de vulnerabilidades: datos que vienen del usuario y llegan sin validar a una consulta SQL, a un comando del sistema, a una ruta de archivo, a un log o a una respuesta HTML; uso de criptografía débil; deserialización insegura; secretos escritos en el código; y, en los workflows, inyección de expresiones `${{ }}` en scripts o permisos excesivos.
+
+**Configuración**: Java (`build-mode: none`, analiza las fuentes sin compilar) y los workflows de GitHub Actions, con el conjunto de consultas `security-extended`. Corre en cada push y PR a `dev` y `main`, todos los lunes y a mano. Requiere el permiso `security-events: write` para subir los resultados (formato SARIF). En repositorios públicos es gratis; en privados requiere GitHub Code Security.
+
+**Resultado** (CodeQL 2.27.2, 2026-10-20): 120 reglas de seguridad para Java y 23 para Actions, **0 hallazgos**. Era esperable por lo revisado a mano: las consultas a la base son JPQL con parámetros, las entradas se validan con Bean Validation y no se arman comandos, rutas ni HTML con datos del usuario.
+
+> CodeQL **no bloquea ataques mientras la aplicación corre**: analiza el código antes de desplegarlo. La protección en ejecución contra inyección SQL la dan las consultas parametrizadas; CodeQL verifica que no haya consultas armadas con texto del usuario.
+
+### Análisis estático vs. dependencias vs. imagen
+
+| | CodeQL (SAST) | Análisis de dependencias | Grype / Trivy (imagen) |
+|---|---|---|---|
+| Qué mira | **Nuestro código** (`.java`, workflows) | Las librerías declaradas (`build.gradle`) | **Todo lo que hay dentro de la imagen**: paquetes del sistema operativo, JRE, jars |
+| Qué encuentra | Errores de programación que crean vulnerabilidades (inyección, XSS, crypto débil) | CVE conocidos en versiones de librerías | CVE conocidos en cualquier paquete de la imagen |
+| Ejemplo en este proyecto | Una consulta armada concatenando el texto de búsqueda (no hay) | `tomcat-embed-core 10.1.53` con CVE-2026-65905 | Lo anterior, más `libc6` de Debian o el binario Go `pebble` de Ubuntu |
+| Cuándo corre | Push/PR y semanal | En el pipeline, al escanear la imagen | En el pipeline, después del `docker build` |
+| Herramienta acá | `codeql.yml` | Grype (cataloga los jars) | Grype (pipeline), Trivy (comparación) |
+
+Se complementan: Grype no puede saber si nuestro código tiene una inyección SQL, y CodeQL no sabe que la librería de Tomcat tiene un CVE.
+
+## Revisión adicional
+
+| Tema | Estado | Dónde |
+|---|---|---|
+| Validación de entradas | `@Valid` + Bean Validation en todos los `POST`/`PUT`; 400 con detalle por campo | `dto/*Request.java`, `GlobalExceptionHandler` |
+| Consultas parametrizadas | Solo JPQL con `@Param` y métodos derivados | `repository/*` |
+| Manejo de errores | Respuesta uniforme sin stack traces; 401/403/404/409/503 explícitos | `GlobalExceptionHandler`, `AuthController` |
+| Información sensible | Actuator: detalle de health y métricas solo para ADMIN; logs sin contraseñas ni tokens; `/api/auth/me` sin hash | `SecurityConfig`, `application.properties` |
+| Dependencias | Parches aplicados y control de Grype en el pipeline | `build.gradle`, `ci-cd.yml` |
+| Dockerfile | Distroless sin shell, usuario 65532, sin secretos en capas, `.dockerignore` excluye `.env` y `.git` | `shiftmanager/Dockerfile` |
+| Secretos | Sin valores por defecto en `prod`; GitHub Secrets / secrets de Container Apps; historial verificado con gitleaks (0 hallazgos) antes de hacer público el repositorio | `docs/azure.md` |
+| Usuarios demo | El supervisor demo (contraseña publicada en el README) está desactivado en Azure | — |
