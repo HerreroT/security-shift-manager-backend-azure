@@ -309,6 +309,8 @@ El despliegue manual usa `scripts/azure_manager.py` (Python 3, Docker y Azure CL
 | `python scripts/azure_manager.py logs [-f]` | Últimas 100 líneas de log (con `-f`, en vivo) |
 | `python scripts/azure_manager.py stop` / `start` / `restart` | Detener, iniciar, reiniciar la revisión activa |
 | `python scripts/azure_manager.py scale 1` / `scale 0` | Réplicas mínimas 1 (demo, sin arranque en frío) / 0 (ahorro) |
+| `python scripts/azure_manager.py metrics [--hours 24]` | Peticiones, tiempo de respuesta, CPU, memoria y reinicios (Azure Monitor); minutos con réplica encendida, vCPU-s y GiB-s consumidos contra la capa gratuita mensual, y estado de PostgreSQL |
+| `python scripts/azure_manager.py version` | Compara el commit de la rama `deploy`, el último run de deploy, la imagen de la app y `/actuator/info`; dice si coinciden |
 | `python scripts/azure_manager.py list` | Container Apps del resource group |
 | `python scripts/azure_manager.py delete` | Elimina la app (pide escribir el nombre para confirmar) |
 | `--sp` antes del comando | Usa el Service Principal (credenciales de `%USERPROFILE%\.shiftmanager\azure-sp.env`, perfil de `az` separado) en lugar de la sesión personal |

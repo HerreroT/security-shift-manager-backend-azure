@@ -15,6 +15,7 @@ Usage (PowerShell, from the repository root):
     python scripts/azure_manager.py deploy --tag 1a2b3c4
     python scripts/azure_manager.py status | url | logs | revisions | tags | list
     python scripts/azure_manager.py stop | start | restart
+    python scripts/azure_manager.py metrics [--hours 24] | version
     python scripts/azure_manager.py delete          # asks for confirmation
 
 Authentication: the current `az login` session, or the Service Principal with --sp
@@ -30,6 +31,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import urllib.request
 from pathlib import Path
 
 # Resource names. Same values as the GitHub Variables of the repository; override with env vars.
@@ -309,6 +311,83 @@ def list_apps():
          "-o", "table"])
 
 
+def metrics(hours):
+    """Azure Monitor metrics of the app and an estimate of the consumption against the monthly free grant."""
+    app = az_json("containerapp", "show", "-g", RESOURCE_GROUP, "-n", APP_NAME)
+    resources = app["properties"]["template"]["containers"][0]["resources"]
+    cpu, memory = float(resources["cpu"]), float(resources["memory"].rstrip("Gi"))
+    info(f"Métricas de las últimas {hours} h (Azure Monitor)")
+    data = az_json("monitor", "metrics", "list", "--resource", app["id"], "--offset", f"{hours}h",
+                   "--interval", f"PT{hours}H", "--aggregation", "Total", "Average", "Maximum", "--metrics",
+                   "Requests", "ResponseTime", "CpuPercentage", "MemoryPercentage", "WorkingSetBytes", "RestartCount")
+    values = {}
+    for metric in data["value"]:
+        points = [p for series in metric["timeseries"] for p in series["data"]]
+        values[metric["name"]["value"]] = points[0] if points else {}
+
+    def value(name, aggregation):
+        return values.get(name, {}).get(aggregation) or 0
+
+    print(f"   Peticiones:              {value('Requests', 'total'):.0f}")
+    print(f"   Tiempo de respuesta:     promedio {value('ResponseTime', 'average'):.0f} ms"
+          f" / máximo {value('ResponseTime', 'maximum'):.0f} ms")
+    print(f"   CPU:                     promedio {value('CpuPercentage', 'average'):.0f} %"
+          f" / máximo {value('CpuPercentage', 'maximum'):.0f} %  (de {cpu} vCPU)")
+    print(f"   Memoria:                 promedio {value('MemoryPercentage', 'average'):.0f} %"
+          f" / máximo {value('WorkingSetBytes', 'maximum') / 2**20:.0f} MiB  (de {memory} GiB)")
+    print(f"   Reinicios:               {value('RestartCount', 'total'):.0f}")
+
+    # Billing counts vCPU-seconds and GiB-seconds while a replica is running (0 replicas = 0 cost).
+    replicas = az_json("monitor", "metrics", "list", "--resource", app["id"], "--offset", f"{hours}h",
+                       "--interval", "PT1M", "--aggregation", "Maximum", "--metrics", "Replicas")
+    replica_minutes = sum(p.get("maximum") or 0 for series in replicas["value"][0]["timeseries"]
+                          for p in series["data"])
+    info("Consumo (estimado a partir de la métrica Replicas)")
+    print(f"   Réplica encendida:       {replica_minutes:.0f} min de {hours * 60}")
+    print(f"   vCPU-segundos:           {replica_minutes * 60 * cpu:.0f}  (gratis por mes: 180.000)")
+    print(f"   GiB-segundos:            {replica_minutes * 60 * memory:.0f}  (gratis por mes: 360.000)")
+    print(f"   Peticiones:              {value('Requests', 'total'):.0f}  (gratis por mes: 2.000.000)")
+    pg_state = run(["az", "postgres", "flexible-server", "show", "-g", RESOURCE_GROUP, "-n", PG_SERVER,
+                    "--query", "state", "-o", "tsv"], capture=True, check=False)
+    print(f"   PostgreSQL {PG_SERVER}: {pg_state or 'desconocido'}  (cobra por hora mientras está Ready)")
+    print("   Costo real: Portal -> Cost Management -> Cost analysis (rg-shiftmanager)")
+
+
+def version():
+    """Compares the commit of the deploy branch, the last pipeline run, the image in Azure and /actuator/info."""
+    run(["git", "-C", str(REPO_ROOT), "fetch", "--quiet", "origin"], capture=True, check=False)
+    branch_sha = run(["git", "-C", str(REPO_ROOT), "rev-parse", "--short=7", "origin/deploy"], capture=True)
+    subject = run(["git", "-C", str(REPO_ROOT), "log", "-1", "--format=%s", "origin/deploy"], capture=True)
+    info("GitHub")
+    print(f"   Rama deploy:             {branch_sha}  {subject}")
+    if shutil.which("gh"):
+        out = run(["gh", "run", "list", "-R", "HerreroT/security-shift-manager-backend-azure", "--workflow",
+                   "ci-cd.yml", "--branch", "deploy", "--limit", "1", "--json",
+                   "headSha,status,conclusion,createdAt"], capture=True, check=False)
+        runs = json.loads(out) if out else []
+        if runs:
+            r = runs[0]
+            print(f"   Último run de deploy:    {r['headSha'][:7]}  {r['status']} {r['conclusion'] or ''}"
+                  f"  ({r['createdAt']})")
+    app = az_json("containerapp", "show", "-g", RESOURCE_GROUP, "-n", APP_NAME)
+    image_tag = app["properties"]["template"]["containers"][0]["image"].rsplit(":", 1)[1]
+    fqdn = app["properties"]["configuration"]["ingress"]["fqdn"]
+    info("Azure")
+    print(f"   Imagen de la app:        {image_tag}")
+    try:
+        # With 0 replicas the first request starts one, so it can take up to a minute.
+        with urllib.request.urlopen(f"https://{fqdn}/actuator/info", timeout=120) as response:
+            app_info = json.load(response)["app"]
+        print(f"   /actuator/info:          version {app_info['version']}  commit {app_info['commit'][:7]}")
+        running = app_info["commit"][:7]
+    except Exception as error:
+        print(f"   /actuator/info:          sin respuesta ({error})")
+        running = None
+    same = branch_sha == image_tag == running
+    print(f"\n   {'OK: GitHub y Azure tienen la misma versión' if same else 'DISTINTAS: revisar el último run en Actions'}"
+          f" ({branch_sha} / {image_tag} / {running})")
+
+
 def delete():
     print(f"\nVas a ELIMINAR la Container App '{APP_NAME}'. La base de datos y las imágenes del ACR NO se borran,")
     print("pero la URL deja de existir y hay que volver a crear la app (deploy) para recuperarla.")
@@ -333,6 +412,8 @@ MENU = [
     ("Reiniciar la revisión", restart),
     ("Réplicas mínimas 1 (para la demo)", lambda: scale(1)),
     ("Réplicas mínimas 0 (ahorro)", lambda: scale(0)),
+    ("Métricas y consumo (última hora)", lambda: metrics(1)),
+    ("Comparar versión GitHub / Azure", version),
     ("Listar apps", list_apps),
     ("Eliminar la app", delete),
 ]
@@ -363,7 +444,10 @@ def main():
     lg.add_argument("-f", "--follow", action="store_true")
     sc = sub.add_parser("scale", help="réplicas mínimas")
     sc.add_argument("min", type=int, choices=[0, 1])
-    for name in ("tags", "status", "url", "revisions", "stop", "start", "restart", "list", "delete", "probes"):
+    mt = sub.add_parser("metrics", help="métricas de Azure Monitor y consumo estimado")
+    mt.add_argument("--hours", type=int, default=1, help="ventana en horas (por defecto 1)")
+    for name in ("tags", "status", "url", "revisions", "stop", "start", "restart", "list", "delete", "probes",
+                 "version"):
         sub.add_parser(name)
     args = parser.parse_args()
 
@@ -373,6 +457,7 @@ def main():
         "deploy": lambda: deploy(args.tag or git_sha()),
         "logs": lambda: logs(args.follow),
         "scale": lambda: scale(args.min),
+        "metrics": lambda: metrics(args.hours), "version": version,
         "tags": show_tags, "status": status, "url": url, "revisions": revisions,
         "stop": stop, "start": start, "restart": restart, "list": list_apps, "delete": delete,
         "probes": configure_probes,
