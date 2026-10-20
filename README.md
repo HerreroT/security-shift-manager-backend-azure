@@ -86,6 +86,8 @@ docker compose up -d --build
 
 Esto levanta PostgreSQL 18 con un volumen persistente y el backend en el puerto 8090. Flyway crea las tablas en el primer arranque.
 
+La imagen es distroless (sin shell, usuario sin privilegios) y lleva etiquetas OCI con la versión y el commit. Detalle del Dockerfile, comandos para detener, reconstruir, ver logs y borrar sin perder datos: [docs/docker.md](docs/docker.md).
+
 ### Conectarse desde la app mobile (Expo Go)
 
 El servidor escucha en todas las interfaces de red (`0.0.0.0`). Para que la app mobile se conecte:
