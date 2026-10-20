@@ -10,6 +10,20 @@ Permite responder preguntas como:
 
 La app mobile está en [security-shift-manager-mobile-azure](https://github.com/HerreroT/security-shift-manager-mobile-azure).
 
+## Despliegue en Azure
+
+El backend corre en **Azure Container Apps** con PostgreSQL 18 (Azure Database for PostgreSQL) y las imágenes versionadas en **Azure Container Registry**:
+
+- API: https://ca-shiftmanager-backend.lemonground-a6322200.chilecentral.azurecontainerapps.io (versión desplegada en `/actuator/info`)
+- CI/CD con GitHub Actions: un push a `dev` o `main` publica la imagen sin desplegar; un push a `deploy` la despliega; también se puede desplegar o volver a una versión anterior a mano ([docs/ci-cd.md](docs/ci-cd.md)).
+
+| Documento | Contenido |
+|---|---|
+| [docs/azure.md](docs/azure.md) | Recursos, costos, creación por Portal y CLI, Service Principal, secretos, despliegue manual |
+| [docs/ci-cd.md](docs/ci-cd.md) | Pipeline, condiciones de despliegue, versionado, rollback y guía de GitHub |
+| [docs/docker.md](docs/docker.md) | Dockerfile multietapa y Docker Compose |
+| [docs/seguridad.md](docs/seguridad.md) | JWT, roles, análisis de vulnerabilidades con Grype |
+
 ## Tecnologías
 
 - Java 21 + Spring Boot 3.5
