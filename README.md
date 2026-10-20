@@ -122,6 +122,7 @@ Todos los endpoints de `/api/**` (salvo `/api/auth/**`) requieren el header `Aut
 | Método | Endpoint | Descripción |
 |---|---|---|
 | POST | `/api/auth/login` | Login, devuelve el JWT |
+| GET | `/api/auth/me` | Usuario dueño del token (sirve para verificar que el token sigue siendo válido) |
 | GET | `/api/guards?search=&active=` | Listado y búsqueda de guardias (nombre, apellido o DNI) |
 | GET/POST/PUT | `/api/guards`, `/api/guards/{id}` | Alta, consulta y edición de guardias |
 | DELETE / PATCH | `/api/guards/{id}`, `/api/guards/{id}/activate` | Baja lógica y reactivación |
@@ -188,3 +189,5 @@ Ver [DOMAIN_MODEL.md](shiftmanager/DOMAIN_MODEL.md). En resumen:
 cd shiftmanager
 ./gradlew test
 ```
+
+La colección de Postman con las pruebas de JWT, roles, salud y métricas está en [docs/postman](docs/postman). El detalle de la seguridad (JWT, roles, anotaciones y pruebas) está en [docs/seguridad.md](docs/seguridad.md).
