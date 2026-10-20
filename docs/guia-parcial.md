@@ -30,6 +30,59 @@ curl.exe https://ca-shiftmanager-backend.lemonground-a6322200.chilecentral.azure
 
 Abrir: Postman (colección `docs/postman`, environment *Azure* con `adminPassword`), la pestaña **Actions** del repo y el Portal en `ca-shiftmanager-backend`. Al terminar: `python scripts/azure_manager.py scale 0`.
 
+## Demo que pide el profe (paso a paso)
+
+Lo que suele pedir: prender la app, ver que prendió, apagarla, mirar métricas y consumo, hacer un cambio de una letra, subirlo, ver GitHub Actions y comparar la versión de GitHub con la de Azure.
+
+**1. Prender y ver que prendió**
+
+```powershell
+python scripts/azure_manager.py start            # Running
+curl.exe https://ca-shiftmanager-backend.lemonground-a6322200.chilecentral.azurecontainerapps.io/actuator/health   # {"status":"UP"} (la primera vez puede tardar ~1 min)
+```
+
+Portal: `ca-shiftmanager-backend` → **Overview** → *Status* Running → botón **Start**.
+
+**2. Apagar**
+
+```powershell
+python scripts/azure_manager.py stop             # Stopped; la URL responde 404
+python scripts/azure_manager.py start            # volver a prenderla para seguir con la demo
+```
+
+Portal: **Overview** → **Stop**.
+
+**3. Métricas y consumo**
+
+```powershell
+python scripts/azure_manager.py metrics --hours 24
+```
+
+Muestra peticiones, tiempo de respuesta, CPU, memoria, reinicios y cuánto se consumió (minutos con réplica encendida, vCPU-segundos y GiB-segundos contra la capa gratuita mensual). Portal: app → **Monitoring** → **Metrics** (*Requests*, *CPU Usage*, *Memory Working Set Bytes*, *Replica Count*) y **Cost Management** → **Cost analysis** para el costo en dinero. Qué decir: *"Con 0 réplicas mínimas la app no consume cuando nadie la usa; se cobra por segundo de vCPU y memoria mientras hay una réplica encendida."*
+
+**4. Cambio de una letra y subirlo**
+
+```powershell
+git checkout dev; git pull
+git checkout -b feature/cambio-parcial
+# editar shiftmanager/src/main/java/com/security/shiftmanager/controller/GreetingController.java (una letra del mensaje)
+git commit -am "feat: cambia el saludo para la demo del parcial"
+git push -u origin feature/cambio-parcial
+gh pr create --base dev --fill; gh pr merge --merge          # run en dev: tests + imagen, SIN deploy
+gh pr create --base main --head dev --fill; gh pr merge --merge   # run en main: tests + imagen, SIN deploy
+git fetch origin; git push origin origin/main:deploy        # run en deploy: tests + imagen + DEPLOY
+```
+
+**5. Ver GitHub Actions**: pestaña **Actions** del repo (o `gh run watch`). Mostrar los jobs *Build y tests* → *Imagen* (Grype + push al ACR) → *Deploy*, y en el run de `deploy` el *Summary* con la versión desplegada. Tarda unos 5-6 minutos.
+
+**6. Comparar el versionado GitHub / Azure**
+
+```powershell
+python scripts/azure_manager.py version
+```
+
+Compara el commit de la rama `deploy` en GitHub, el último run de deploy, la imagen que tiene la Container App y lo que responde `/actuator/info`. Si todo coincide imprime `OK: GitHub y Azure tienen la misma versión (<sha> / <sha> / <sha>)`. A mano: el SHA del último commit en GitHub (`git log origin/deploy -1 --oneline`) = el tag de la imagen en Portal → app → **Containers** = `version` de `/actuator/info`. Mostrar también `/hello` con el mensaje cambiado.
+
 ## Simulacro de defensa
 
 ### Parte 1: "Hacé un cambio, subilo a GitHub, construí una imagen versionada, publicala en ACR, pero no hagas deploy"
