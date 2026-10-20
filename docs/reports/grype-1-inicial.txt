@@ -1,0 +1,238 @@
+# Grype 0.120.1 - imagen shiftmanager-backend:baseline - DB 2026-10-19T06:39:15Z
+NAME                       INSTALLED                           FIXED IN         TYPE          VULNERABILITY        SEVERITY  EPSS          RISK   
+tomcat-embed-core          10.1.53                             10.1.55          java-archive  GHSA-r29c-68gh-xp6x  Critical  1.7% (76th)   1.6    
+tomcat-embed-core          10.1.53                             10.1.55          java-archive  GHSA-h6fc-48rj-7qqh  Critical  1.3% (70th)   1.2    
+tomcat-embed-core          10.1.53                             10.1.55          java-archive  GHSA-5m62-pw8w-7w9f  Critical  1.2% (68th)   1.1    
+spring-webmvc              6.2.17                                               java-archive  GHSA-pc63-qcmh-9cmg  Critical  0.6% (47th)   0.6    
+spring-webmvc              6.2.17                                               java-archive  GHSA-j9f9-w8pj-32f8  Critical  0.6% (45th)   0.5    
+tomcat-embed-core          10.1.53                             10.1.58          java-archive  GHSA-9xv2-5v5q-p794  Critical  0.6% (45th)   0.5    
+stdlib                     go1.27.1                            1.27.2           go-module     GO-2026-6612         Critical  0.6% (46th)   0.5    
+tomcat-embed-core          10.1.53                             10.1.58          java-archive  GHSA-gcx9-497g-6cp6  Critical  0.5% (44th)   0.5    
+tomcat-embed-core          10.1.53                             10.1.58          java-archive  GHSA-h3x4-894j-xpx5  Critical  0.5% (39th)   0.4    
+postgresql                 42.7.10                             42.7.11          java-archive  GHSA-98qh-xjc8-98pq  High      3.3% (88th)   2.4    
+jackson-databind           2.21.2                              2.21.4           java-archive  GHSA-rmj7-2vxq-3g9f  High      1.2% (68th)   1.0    
+micrometer-core            1.15.10                             1.15.12          java-archive  GHSA-g3pr-3p32-fp23  High      1.1% (64th)   0.8    
+jackson-databind           2.21.2                              2.21.4           java-archive  GHSA-j3rv-43j4-c7qm  High      1.0% (62nd)   0.8    
+tomcat-embed-core          10.1.53                             10.1.55          java-archive  GHSA-gx5v-xp9w-j4cg  High      0.9% (57th)   0.6    
+micrometer-core            1.15.10                             1.15.12          java-archive  GHSA-w737-wx49-qj23  High      0.8% (57th)   0.6    
+tomcat-embed-core          10.1.53                             10.1.55          java-archive  GHSA-fv25-8xcx-gqjc  High      0.6% (49th)   0.5    
+jackson-databind           2.21.2                              2.21.6           java-archive  GHSA-q4xh-88c3-wmh7  High      0.6% (46th)   0.4    
+stdlib                     go1.27.1                            1.27.2           go-module     GO-2026-6603         High      0.6% (46th)   0.4    
+stdlib                     go1.27.1                            1.27.2           go-module     GO-2026-6611         High      0.6% (45th)   0.4    
+jackson-core               2.21.2                              2.21.7           java-archive  GHSA-p6pp-m3f8-5c89  High      0.5% (44th)   0.4    
+tomcat-embed-core          10.1.53                             10.1.55          java-archive  GHSA-5mp6-jrq3-r938  High      0.5% (41st)   0.4    
+jackson-core               2.21.2                              2.21.4           java-archive  GHSA-r7wm-3cxj-wff9  High      0.5% (38th)   0.4    
+jackson-core               2.21.2                              2.21.7           java-archive  GHSA-7hhh-6rmp-j9qf  High      0.5% (40th)   0.4    
+tomcat-embed-core          10.1.53                             10.1.54          java-archive  GHSA-rv64-5gf8-9qq8  High      0.5% (38th)   0.3    
+spring-expression          6.2.17                              6.2.19           java-archive  GHSA-r5w3-xv2f-j59q  High      0.5% (38th)   0.3    
+spring-webmvc              6.2.17                              6.2.19           java-archive  GHSA-x23c-287f-qqv5  High      0.5% (38th)   0.3    
+spring-data-commons        3.5.10                              3.5.12           java-archive  GHSA-88fw-v6x4-3f58  High      0.5% (38th)   0.3    
+spring-data-commons        3.5.10                              3.5.12           java-archive  GHSA-9fw2-h3hf-293r  High      0.5% (38th)   0.3    
+jackson-databind           2.21.2                              2.21.7           java-archive  GHSA-cxp5-3px4-pw24  High      0.4% (37th)   0.3    
+jackson-databind           2.21.2                              2.21.7           java-archive  GHSA-wv8q-qhhj-9h54  High      0.4% (37th)   0.3    
+tomcat-embed-core          10.1.53                             10.1.54          java-archive  GHSA-x4m4-345f-5h5g  High      0.4% (37th)   0.3    
+stdlib                     go1.27.1                            1.27.2           go-module     GO-2026-6617         High      0.4% (34th)   0.3    
+stdlib                     go1.27.1                            1.26.9, *1.27.2  go-module     GO-2026-6608         High      0.4% (33rd)   0.3    
+stdlib                     go1.27.1                            1.26.9, *1.27.2  go-module     GO-2026-6607         High      0.4% (32nd)   0.3    
+stdlib                     go1.27.1                            1.26.9, *1.27.2  go-module     GO-2026-6613         High      0.3% (22nd)   0.2    
+stdlib                     go1.27.1                            1.26.9, *1.27.2  go-module     GO-2026-6605         High      0.3% (22nd)   0.2    
+stdlib                     go1.27.1                            1.27.2           go-module     GO-2026-6610         High      0.3% (21st)   0.2    
+spring-webmvc              6.2.17                              6.2.19           java-archive  GHSA-3chg-m5w7-qfv5  High      0.3% (18th)   0.2    
+postgresql                 42.7.10                             42.7.12          java-archive  GHSA-j92g-9f8w-j867  High      0.2% (13th)   0.2    
+spring-boot                3.5.13                              3.5.14           java-archive  GHSA-wwpq-f5c3-7hvx  High      0.1% (2nd)    < 0.1  
+commons-lang3              3.17.0                              3.18.0           java-archive  GHSA-j288-q9x7-2f5v  Medium    2.6% (85th)   1.5    
+wget                       1.25.0-2ubuntu4.4                                    deb           CVE-2021-31879       Medium    1.1% (65th)   0.6    
+log4j-api                  2.24.3                              2.25.5           java-archive  GHSA-qv9r-c865-cp47  Medium    0.8% (56th)   0.5    
+jackson-databind           2.21.2                              2.21.6           java-archive  GHSA-gx83-3vf8-gh7j  Medium    0.7% (52nd)   0.4    
+perl                       5.40.1-7ubuntu0.3                                    deb           CVE-2026-82560       Medium    0.6% (49th)   0.3    
+perl-base                  5.40.1-7ubuntu0.3                                    deb           CVE-2026-82560       Medium    0.6% (49th)   0.3    
+perl                       5.40.1-7ubuntu0.3                                    deb           CVE-2026-48959       Medium    0.6% (48th)   0.3    
+perl-base                  5.40.1-7ubuntu0.3                                    deb           CVE-2026-48959       Medium    0.6% (48th)   0.3    
+expat                      2.7.4-1ubuntu0.2                                     deb           CVE-2026-77214       Medium    0.5% (44th)   0.3    
+libexpat1                  2.7.4-1ubuntu0.2                                     deb           CVE-2026-77214       Medium    0.5% (44th)   0.3    
+jackson-databind           2.21.2                              2.21.6           java-archive  GHSA-wjgm-6hv5-3cvf  Medium    0.5% (43rd)   0.3    
+perl                       5.40.1-7ubuntu0.3                                    deb           CVE-2026-48962       Medium    0.5% (41st)   0.2    
+perl-base                  5.40.1-7ubuntu0.3                                    deb           CVE-2026-48962       Medium    0.5% (41st)   0.2    
+jackson-databind           2.21.2                              2.21.4           java-archive  GHSA-3pjw-73gf-8qr5  Medium    0.4% (35th)   0.2    
+spring-data-commons        3.5.10                              3.5.12           java-archive  GHSA-5m4m-73w9-8433  Medium    0.4% (37th)   0.2    
+spring-expression          6.2.17                              6.2.19           java-archive  GHSA-wxpp-56q6-5pcg  Medium    0.5% (38th)   0.2    
+perl                       5.40.1-7ubuntu0.3                                    deb           CVE-2026-42497       Medium    0.5% (39th)   0.2    
+perl-base                  5.40.1-7ubuntu0.3                                    deb           CVE-2026-42497       Medium    0.5% (39th)   0.2    
+jackson-databind           2.21.2                              2.21.4           java-archive  GHSA-9fxm-vc8v-hj55  Medium    0.4% (37th)   0.2    
+jackson-databind           2.21.2                              2.21.5           java-archive  GHSA-5jmj-h7xm-6q6v  Medium    0.4% (37th)   0.2    
+perl                       5.40.1-7ubuntu0.3                                    deb           CVE-2026-9538        Medium    0.4% (37th)   0.2    
+perl-base                  5.40.1-7ubuntu0.3                                    deb           CVE-2026-9538        Medium    0.4% (37th)   0.2    
+jackson-databind           2.21.2                              2.21.5           java-archive  GHSA-5gvw-p9qm-jgwh  Medium    0.4% (31st)   0.2    
+spring-webmvc              6.2.17                              6.2.19           java-archive  GHSA-72pg-x5f8-j25j  Medium    0.4% (31st)   0.2    
+jackson-databind           2.21.2                              2.21.4           java-archive  GHSA-rcqc-6cw3-h962  Medium    0.4% (27th)   0.2    
+perl                       5.40.1-7ubuntu0.3                                    deb           CVE-2026-48961       Medium    0.4% (33rd)   0.2    
+perl-base                  5.40.1-7ubuntu0.3                                    deb           CVE-2026-48961       Medium    0.4% (33rd)   0.2    
+expat                      2.7.4-1ubuntu0.2                                     deb           CVE-2026-93990       Medium    0.4% (33rd)   0.2    
+libexpat1                  2.7.4-1ubuntu0.2                                     deb           CVE-2026-93990       Medium    0.4% (33rd)   0.2    
+spring-data-commons        3.5.10                              3.5.12           java-archive  GHSA-5vpf-xvv7-c8vh  Medium    0.4% (28th)   0.2    
+jackson-databind           2.21.2                              2.21.4           java-archive  GHSA-5hh8-q8hv-fr38  Medium    0.4% (30th)   0.2    
+libpcre2-8-0               10.46-1build1                                        deb           CVE-2026-86145       Medium    0.4% (31st)   0.2    
+pcre2                      10.46-1build1                                        deb           CVE-2026-86145       Medium    0.4% (31st)   0.2    
+jackson-databind           2.21.2                              2.21.4           java-archive  GHSA-hgj6-7826-r7m5  Medium    0.4% (29th)   0.2    
+spring-webmvc              6.2.17                              6.2.19           java-archive  GHSA-mq64-j8f9-9gcj  Medium    0.3% (25th)   0.2    
+zlib                       1:1.3.dfsg+really1.3.1-1ubuntu3.1                    deb           CVE-2026-85091       Medium    0.4% (27th)   0.2    
+zlib1g                     1:1.3.dfsg+really1.3.1-1ubuntu3.1                    deb           CVE-2026-85091       Medium    0.4% (27th)   0.2    
+spring-webmvc              6.2.17                              6.2.18           java-archive  GHSA-6p4f-wcwh-5vvm  Medium    0.3% (25th)   0.2    
+expat                      2.7.4-1ubuntu0.2                                     deb           CVE-2026-102633      Medium    0.3% (26th)   0.2    
+libexpat1                  2.7.4-1ubuntu0.2                                     deb           CVE-2026-102633      Medium    0.3% (26th)   0.2    
+spring-security-web        6.5.9                               6.5.11           java-archive  GHSA-x2r2-rvhq-2mqv  Medium    0.3% (20th)   0.2    
+jackson-databind           2.21.2                              2.21.5           java-archive  GHSA-vvgp-rfg2-7rr6  Medium    0.3% (22nd)   0.2    
+spring-webmvc              6.2.17                              6.2.19           java-archive  GHSA-cjpg-rgq5-fr37  Medium    0.3% (22nd)   0.2    
+libc-bin                   2.43-2ubuntu2.4                                      deb           CVE-2026-8674        Medium    0.3% (22nd)   0.2    
+libc-gconv-modules-extra   2.43-2ubuntu2.4                                      deb           CVE-2026-8674        Medium    0.3% (22nd)   0.2    
+libc6                      2.43-2ubuntu2.4                                      deb           CVE-2026-8674        Medium    0.3% (22nd)   0.2    
+locales                    2.43-2ubuntu2.4                                      deb           CVE-2026-8674        Medium    0.3% (22nd)   0.2    
+libpcre2-8-0               10.46-1build1                                        deb           CVE-2026-89156       Medium    0.3% (20th)   0.1    
+pcre2                      10.46-1build1                                        deb           CVE-2026-89156       Medium    0.3% (20th)   0.1    
+libc-bin                   2.43-2ubuntu2.4                                      deb           CVE-2026-97399       Medium    0.3% (20th)   0.1    
+libc-gconv-modules-extra   2.43-2ubuntu2.4                                      deb           CVE-2026-97399       Medium    0.3% (20th)   0.1    
+libc6                      2.43-2ubuntu2.4                                      deb           CVE-2026-97399       Medium    0.3% (20th)   0.1    
+locales                    2.43-2ubuntu2.4                                      deb           CVE-2026-97399       Medium    0.3% (20th)   0.1    
+libpcre2-8-0               10.46-1build1                                        deb           CVE-2026-89157       Medium    0.3% (18th)   0.1    
+pcre2                      10.46-1build1                                        deb           CVE-2026-89157       Medium    0.3% (18th)   0.1    
+cyrus-sasl2                2.1.28+dfsg1-9ubuntu3                                deb           CVE-2026-107161      Medium    0.3% (18th)   0.1    
+libsasl2-2                 2.1.28+dfsg1-9ubuntu3                                deb           CVE-2026-107161      Medium    0.3% (18th)   0.1    
+libsasl2-modules-db        2.1.28+dfsg1-9ubuntu3                                deb           CVE-2026-107161      Medium    0.3% (18th)   0.1    
+libpcre2-8-0               10.46-1build1                                        deb           CVE-2026-89160       Medium    0.3% (17th)   0.1    
+pcre2                      10.46-1build1                                        deb           CVE-2026-89160       Medium    0.3% (17th)   0.1    
+spring-webmvc              6.2.17                              6.2.19           java-archive  GHSA-957g-f97v-vppc  Medium    0.2% (14th)   0.1    
+perl                       5.40.1-7ubuntu0.3                                    deb           CVE-2026-7017        Medium    0.2% (14th)   0.1    
+perl-base                  5.40.1-7ubuntu0.3                                    deb           CVE-2026-7017        Medium    0.2% (14th)   0.1    
+libpcre2-8-0               10.46-1build1                                        deb           CVE-2026-89158       Medium    0.2% (14th)   0.1    
+pcre2                      10.46-1build1                                        deb           CVE-2026-89158       Medium    0.2% (14th)   0.1    
+libc-bin                   2.43-2ubuntu2.4                                      deb           CVE-2026-89092       Medium    0.2% (14th)   0.1    
+libc-gconv-modules-extra   2.43-2ubuntu2.4                                      deb           CVE-2026-89092       Medium    0.2% (14th)   0.1    
+libc6                      2.43-2ubuntu2.4                                      deb           CVE-2026-89092       Medium    0.2% (14th)   0.1    
+locales                    2.43-2ubuntu2.4                                      deb           CVE-2026-89092       Medium    0.2% (14th)   0.1    
+spring-security-web        6.5.9                               6.5.11           java-archive  GHSA-293q-567p-wmwq  Medium    0.2% (8th)    0.1    
+gnutls28                   3.8.12-2ubuntu1.1                                    deb           CVE-2026-95210       Medium    0.2% (12th)   0.1    
+libgnutls30t64             3.8.12-2ubuntu1.1                                    deb           CVE-2026-95210       Medium    0.2% (12th)   0.1    
+gnutls28                   3.8.12-2ubuntu1.1                                    deb           CVE-2026-95209       Medium    0.2% (12th)   0.1    
+libgnutls30t64             3.8.12-2ubuntu1.1                                    deb           CVE-2026-95209       Medium    0.2% (12th)   0.1    
+bsdutils                   1:2.41.3-3ubuntu2.2                                  deb           CVE-2026-76642       Medium    0.2% (11th)   0.1    
+libblkid1                  2.41.3-3ubuntu2.2                                    deb           CVE-2026-76642       Medium    0.2% (11th)   0.1    
+libmount1                  2.41.3-3ubuntu2.2                                    deb           CVE-2026-76642       Medium    0.2% (11th)   0.1    
+libsmartcols1              2.41.3-3ubuntu2.2                                    deb           CVE-2026-76642       Medium    0.2% (11th)   0.1    
+libuuid1                   2.41.3-3ubuntu2.2                                    deb           CVE-2026-76642       Medium    0.2% (11th)   0.1    
+login                      1:4.16.0-2+really2.41.3-3ubuntu2.2                   deb           CVE-2026-76642       Medium    0.2% (11th)   0.1    
+mount                      2.41.3-3ubuntu2.2                                    deb           CVE-2026-76642       Medium    0.2% (11th)   0.1    
+util-linux                 2.41.3-3ubuntu2.2                                    deb           CVE-2026-76642       Medium    0.2% (11th)   0.1    
+libpcre2-8-0               10.46-1build1                                        deb           CVE-2026-103111      Medium    0.2% (11th)   0.1    
+pcre2                      10.46-1build1                                        deb           CVE-2026-103111      Medium    0.2% (11th)   0.1    
+gnutls28                   3.8.12-2ubuntu1.1                                    deb           CVE-2026-88647       Medium    0.2% (10th)   0.1    
+libgnutls30t64             3.8.12-2ubuntu1.1                                    deb           CVE-2026-88647       Medium    0.2% (10th)   0.1    
+spring-webmvc              6.2.17                              6.2.19           java-archive  GHSA-h3qp-gqrc-q736  Medium    0.2% (12th)   0.1    
+expat                      2.7.4-1ubuntu0.2                                     deb           CVE-2025-66382       Medium    0.2% (9th)    0.1    
+libexpat1                  2.7.4-1ubuntu0.2                                     deb           CVE-2025-66382       Medium    0.2% (9th)    0.1    
+libp11-kit0                0.26.2-2                                             deb           CVE-2026-13757       Medium    0.2% (9th)    0.1    
+p11-kit                    0.26.2-2                                             deb           CVE-2026-13757       Medium    0.2% (9th)    0.1    
+p11-kit-modules            0.26.2-2                                             deb           CVE-2026-13757       Medium    0.2% (9th)    0.1    
+gnutls28                   3.8.12-2ubuntu1.1                                    deb           CVE-2026-67693       Medium    0.2% (8th)    < 0.1  
+libgnutls30t64             3.8.12-2ubuntu1.1                                    deb           CVE-2026-67693       Medium    0.2% (8th)    < 0.1  
+spring-web                 6.2.17                              6.2.19           java-archive  GHSA-7m2p-62gw-p8qq  Medium    0.2% (10th)   < 0.1  
+bsdutils                   1:2.41.3-3ubuntu2.2                                  deb           CVE-2026-78408       Medium    0.2% (7th)    < 0.1  
+libblkid1                  2.41.3-3ubuntu2.2                                    deb           CVE-2026-78408       Medium    0.2% (7th)    < 0.1  
+libmount1                  2.41.3-3ubuntu2.2                                    deb           CVE-2026-78408       Medium    0.2% (7th)    < 0.1  
+libsmartcols1              2.41.3-3ubuntu2.2                                    deb           CVE-2026-78408       Medium    0.2% (7th)    < 0.1  
+libuuid1                   2.41.3-3ubuntu2.2                                    deb           CVE-2026-78408       Medium    0.2% (7th)    < 0.1  
+login                      1:4.16.0-2+really2.41.3-3ubuntu2.2                   deb           CVE-2026-78408       Medium    0.2% (7th)    < 0.1  
+mount                      2.41.3-3ubuntu2.2                                    deb           CVE-2026-78408       Medium    0.2% (7th)    < 0.1  
+util-linux                 2.41.3-3ubuntu2.2                                    deb           CVE-2026-78408       Medium    0.2% (7th)    < 0.1  
+gnutls28                   3.8.12-2ubuntu1.1                                    deb           CVE-2026-95184       Medium    0.2% (7th)    < 0.1  
+libgnutls30t64             3.8.12-2ubuntu1.1                                    deb           CVE-2026-95184       Medium    0.2% (7th)    < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35363       Medium    0.2% (6th)    < 0.1  
+coreutils                  9.5-1ubuntu2+0.0.0~ubuntu25         9.7-3ubuntu2.1   deb           CVE-2026-56391       Medium    0.2% (6th)    < 0.1  
+libpcre2-8-0               10.46-1build1                                        deb           CVE-2026-89162       Medium    0.2% (4th)    < 0.1  
+pcre2                      10.46-1build1                                        deb           CVE-2026-89162       Medium    0.2% (4th)    < 0.1  
+bsdutils                   1:2.41.3-3ubuntu2.2                                  deb           CVE-2026-78410       Medium    0.2% (4th)    < 0.1  
+libblkid1                  2.41.3-3ubuntu2.2                                    deb           CVE-2026-78410       Medium    0.2% (4th)    < 0.1  
+libmount1                  2.41.3-3ubuntu2.2                                    deb           CVE-2026-78410       Medium    0.2% (4th)    < 0.1  
+libsmartcols1              2.41.3-3ubuntu2.2                                    deb           CVE-2026-78410       Medium    0.2% (4th)    < 0.1  
+libuuid1                   2.41.3-3ubuntu2.2                                    deb           CVE-2026-78410       Medium    0.2% (4th)    < 0.1  
+login                      1:4.16.0-2+really2.41.3-3ubuntu2.2                   deb           CVE-2026-78410       Medium    0.2% (4th)    < 0.1  
+mount                      2.41.3-3ubuntu2.2                                    deb           CVE-2026-78410       Medium    0.2% (4th)    < 0.1  
+util-linux                 2.41.3-3ubuntu2.2                                    deb           CVE-2026-78410       Medium    0.2% (4th)    < 0.1  
+bsdutils                   1:2.41.3-3ubuntu2.2                                  deb           CVE-2026-78409       Medium    0.2% (4th)    < 0.1  
+libblkid1                  2.41.3-3ubuntu2.2                                    deb           CVE-2026-78409       Medium    0.2% (4th)    < 0.1  
+libmount1                  2.41.3-3ubuntu2.2                                    deb           CVE-2026-78409       Medium    0.2% (4th)    < 0.1  
+libsmartcols1              2.41.3-3ubuntu2.2                                    deb           CVE-2026-78409       Medium    0.2% (4th)    < 0.1  
+libuuid1                   2.41.3-3ubuntu2.2                                    deb           CVE-2026-78409       Medium    0.2% (4th)    < 0.1  
+login                      1:4.16.0-2+really2.41.3-3ubuntu2.2                   deb           CVE-2026-78409       Medium    0.2% (4th)    < 0.1  
+mount                      2.41.3-3ubuntu2.2                                    deb           CVE-2026-78409       Medium    0.2% (4th)    < 0.1  
+util-linux                 2.41.3-3ubuntu2.2                                    deb           CVE-2026-78409       Medium    0.2% (4th)    < 0.1  
+libacl1                    2.3.2-2                             (won't fix)      deb           CVE-2026-54369       Medium    0.2% (4th)    < 0.1  
+libp11-kit0                0.26.2-2                                             deb           CVE-2026-18938       Medium    0.2% (3rd)    < 0.1  
+p11-kit                    0.26.2-2                                             deb           CVE-2026-18938       Medium    0.2% (3rd)    < 0.1  
+p11-kit-modules            0.26.2-2                                             deb           CVE-2026-18938       Medium    0.2% (3rd)    < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35368       Medium    0.1% (3rd)    < 0.1  
+dash                       0.5.12-12ubuntu3                                     deb           CVE-2026-102474      Medium    0.1% (3rd)    < 0.1  
+libc-bin                   2.43-2ubuntu2.4                                      deb           CVE-2026-18374       Medium    0.1% (3rd)    < 0.1  
+libc-gconv-modules-extra   2.43-2ubuntu2.4                                      deb           CVE-2026-18374       Medium    0.1% (3rd)    < 0.1  
+libc6                      2.43-2ubuntu2.4                                      deb           CVE-2026-18374       Medium    0.1% (3rd)    < 0.1  
+locales                    2.43-2ubuntu2.4                                      deb           CVE-2026-18374       Medium    0.1% (3rd)    < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35341       Medium    0.1% (3rd)    < 0.1  
+tar                        1.35+dfsg-4ubuntu0.4                                 deb           CVE-2026-18508       Medium    0.1% (3rd)    < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35351       Medium    0.1% (2nd)    < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-93658       Medium    0.1% (2nd)    < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35371       Medium    0.1% (2nd)    < 0.1  
+spring-boot-autoconfigure  3.5.13                              3.5.15           java-archive  GHSA-ggg2-9786-hwc8  Medium    0.1% (2nd)    < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35373       Medium    0.1% (2nd)    < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35348       Medium    0.1% (2nd)    < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35350       Medium    0.1% (2nd)    < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35344       Medium    0.1% (2nd)    < 0.1  
+dash                       0.5.12-12ubuntu3                                     deb           CVE-2026-102473      Medium    0.1% (2nd)    < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35367       Medium    0.1% (2nd)    < 0.1  
+libc-bin                   2.43-2ubuntu2.4                                      deb           CVE-2026-95818       Medium    0.1% (2nd)    < 0.1  
+libc-gconv-modules-extra   2.43-2ubuntu2.4                                      deb           CVE-2026-95818       Medium    0.1% (2nd)    < 0.1  
+libc6                      2.43-2ubuntu2.4                                      deb           CVE-2026-95818       Medium    0.1% (2nd)    < 0.1  
+locales                    2.43-2ubuntu2.4                                      deb           CVE-2026-95818       Medium    0.1% (2nd)    < 0.1  
+perl                       5.40.1-7ubuntu0.3                                    deb           CVE-2025-15649       Medium    0.1% (2nd)    < 0.1  
+perl-base                  5.40.1-7ubuntu0.3                                    deb           CVE-2025-15649       Medium    0.1% (2nd)    < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35370       Medium    0.1% (2nd)    < 0.1  
+libpcre2-8-0               10.46-1build1                                        deb           CVE-2026-89161       Medium    0.1% (2nd)    < 0.1  
+pcre2                      10.46-1build1                                        deb           CVE-2026-89161       Medium    0.1% (2nd)    < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35377       Medium    0.1% (2nd)    < 0.1  
+spring-security-core       6.5.9                               6.5.10           java-archive  GHSA-x2wq-9x2f-fhj7  Medium    0.1% (1st)    < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35352       Medium    0.1% (1st)    < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35359       Medium    0.1% (1st)    < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35360       Medium    0.1% (0th)    < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35345       Medium    0.1% (0th)    < 0.1  
+libc-bin                   2.43-2ubuntu2.4                                      deb           CVE-2026-86805       Medium    < 0.1% (0th)  < 0.1  
+libc-gconv-modules-extra   2.43-2ubuntu2.4                                      deb           CVE-2026-86805       Medium    < 0.1% (0th)  < 0.1  
+libc6                      2.43-2ubuntu2.4                                      deb           CVE-2026-86805       Medium    < 0.1% (0th)  < 0.1  
+locales                    2.43-2ubuntu2.4                                      deb           CVE-2026-86805       Medium    < 0.1% (0th)  < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35364       Medium    < 0.1% (0th)  < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35357       Medium    < 0.1% (0th)  < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35354       Medium    < 0.1% (0th)  < 0.1  
+rust-coreutils             0.10.0-1ubuntu2~26.04.1                              deb           CVE-2026-35374       Medium    < 0.1% (0th)  < 0.1  
+libacl1                    2.3.2-2                             (won't fix)      deb           CVE-2026-54370       Medium    < 0.1% (0th)  < 0.1  
+tar                        1.35+dfsg-4ubuntu0.4                                 deb           CVE-2026-18477       Medium    < 0.1% (0th)  < 0.1  
+jackson-databind           2.21.2                              2.21.5           java-archive  GHSA-mhm7-754m-9p8w  Medium    N/A           N/A    
+tomcat-embed-core          10.1.53                             10.1.55          java-archive  GHSA-9m89-8frq-c98c  Low       0.5% (43rd)   0.2    
+spring-core                6.2.17                              6.2.19           java-archive  GHSA-659m-px2c-25wj  Low       0.4% (33rd)   0.1    
+login.defs                 1:4.17.4-2ubuntu3                                    deb           CVE-2024-56433       Low       0.4% (35th)   0.1    
+passwd                     1:4.17.4-2ubuntu3                                    deb           CVE-2024-56433       Low       0.4% (35th)   0.1    
+shadow                     1:4.17.4-2ubuntu3                                    deb           CVE-2024-56433       Low       0.4% (35th)   0.1    
+logback-core               1.5.32                              1.5.33           java-archive  GHSA-p47f-322f-whfh  Low       0.5% (44th)   0.1    
+wget                       1.25.0-2ubuntu4.4                                    deb           CVE-2026-16599       Low       0.4% (29th)   0.1    
+logback-core               1.5.32                              1.5.34           java-archive  GHSA-jhq6-gfmj-v8fx  Low       0.4% (29th)   0.1    
+spring-expression          6.2.17                              6.2.19           java-archive  GHSA-9f52-rjqv-25qv  Low       0.3% (16th)   < 0.1  
+coreutils                  9.5-1ubuntu2+0.0.0~ubuntu25         9.7-3ubuntu2.1   deb           CVE-2025-5278        Low       0.3% (19th)   < 0.1  
+spring-security-core       6.5.9                               6.5.10           java-archive  GHSA-vxf7-qj7q-83fh  Low       0.2% (11th)   < 0.1  
+spring-webmvc              6.2.17                              6.2.18           java-archive  GHSA-wg35-8jpf-2xv3  Low       0.2% (13th)   < 0.1  
+libsystemd0                259.5-0ubuntu3.4                                     deb           CVE-2026-40228       Low       0.1% (2nd)    < 0.1  
+libudev1                   259.5-0ubuntu3.4                                     deb           CVE-2026-40228       Low       0.1% (2nd)    < 0.1  
+systemd                    259.5-0ubuntu3.4                                     deb           CVE-2026-40228       Low       0.1% (2nd)    < 0.1  
+dirmngr                    2.4.8-4ubuntu3.1                                     deb           CVE-2026-105712      Low       0.1% (1st)    < 0.1  
+gnupg                      2.4.8-4ubuntu3.1                                     deb           CVE-2026-105712      Low       0.1% (1st)    < 0.1  
+gnupg2                     2.4.8-4ubuntu3.1                                     deb           CVE-2026-105712      Low       0.1% (1st)    < 0.1  
+gpg                        2.4.8-4ubuntu3.1                                     deb           CVE-2026-105712      Low       0.1% (1st)    < 0.1  
+gpg-agent                  2.4.8-4ubuntu3.1                                     deb           CVE-2026-105712      Low       0.1% (1st)    < 0.1  
+gpgconf                    2.4.8-4ubuntu3.1                                     deb           CVE-2026-105712      Low       0.1% (1st)    < 0.1  
+gpgsm                      2.4.8-4ubuntu3.1                                     deb           CVE-2026-105712      Low       0.1% (1st)    < 0.1  
+gpgv                       2.4.8-4ubuntu3.1                                     deb           CVE-2026-105712      Low       0.1% (1st)    < 0.1

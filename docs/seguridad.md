@@ -109,3 +109,75 @@ Patrones que aparecen de forma natural (no se agregaron para demostrarlos):
 - **Errores**: `GlobalExceptionHandler` responde con un formato uniforme y sin stack traces.
 - **Logs**: los logins exitosos y fallidos quedan registrados con el id de usuario y el motivo, nunca la contraseña ni el token.
 - **Secretos**: en el perfil `prod` no hay valores por defecto; si falta uno la app no arranca. Ver `docs/azure.md` para dónde se guardan.
+
+## Análisis de vulnerabilidades de la imagen (Grype)
+
+### Conceptos
+
+- **CVE** (Common Vulnerabilities and Exposures): identificador público de una vulnerabilidad conocida, por ejemplo `CVE-2026-5435`. GitHub publica además sus propios avisos con id `GHSA-xxxx` (muchos tienen un CVE asociado).
+- **CVSS** (Common Vulnerability Scoring System): puntaje de 0 a 10 que mide la gravedad técnica (0.1-3.9 baja, 4-6.9 media, 7-8.9 alta, 9-10 crítica). No mide el riesgo para *nuestra* aplicación: una vulnerabilidad 9.8 en una función que no usamos no es explotable.
+- **EPSS**: probabilidad estimada de que la vulnerabilidad se explote en los próximos 30 días (Grype la muestra en la columna `EPSS`).
+- **Estado del fix**: `fixed` (hay versión corregida), `not-fixed` (todavía no hay), `wont-fix` (el mantenedor decidió no corregirla, normalmente por bajo impacto).
+
+### Cómo se ejecuta
+
+```powershell
+grype docker:shiftmanager-backend:<tag>                              # informe completo
+grype docker:shiftmanager-backend:<tag> --only-fixed --fail-on high  # regla del pipeline
+```
+
+La regla del pipeline (`--only-fixed --fail-on high`) hace fallar el build si hay alguna vulnerabilidad **alta o crítica que tiene corrección disponible**: es decir, algo que podemos y debemos arreglar. Las que no tienen corrección se reportan igual, pero no bloquean.
+
+### Resultados (Grype 0.120.1, base de datos del 2026-10-19)
+
+| Etapa | Imagen | Crítica | Alta | Media | Baja | Despreciable | **Total** | Altas/críticas corregibles |
+|---|---|---|---|---|---|---|---|---|
+| 1. Inicial | `eclipse-temurin:21-jre` (Ubuntu) + Spring Boot 3.5.13 | 9 | 31 | 173 | 23 | 0 | **236** | 38 (el pipeline fallaría) |
+| 2. Cambio de imagen base | `distroless/java21-debian13:nonroot` + Spring Boot 3.5.13 | 8 | 44 | 51 | 13 | 19 | **135** | 31 |
+| 3. Dependencias actualizadas | distroless + Spring Boot 3.5.16 + parches | **2** | 21 | 24 | 6 | 19 | **72** | **0** (el pipeline pasa) |
+
+Informes completos: `docs/reports/grype-1-inicial.txt`, `grype-2-distroless.txt`, `grype-3-final.txt`.
+
+> En la etapa 2 aumentan las "altas" porque Grype clasifica los paquetes de Debian con el CVSS de NVD, mientras que antes muchas de Ubuntu eran "medias". En total bajan de 236 a 135 y desaparecen las del binario Go `pebble` que traía la imagen de Ubuntu.
+
+### Correcciones aplicadas
+
+| Corrección | Archivo | Vulnerabilidades que resuelve (ejemplos) |
+|---|---|---|
+| Imagen base Ubuntu → distroless Debian 13 | `shiftmanager/Dockerfile` | Go stdlib en `/usr/bin/pebble`: GO-2026-6612 (crítica, CVSS 9.1) y 8 altas; ~120 de paquetes de Ubuntu |
+| Spring Boot 3.5.13 → 3.5.16 | `shiftmanager/build.gradle` | spring-webmvc GHSA-x23c-287f-qqv5, spring-boot GHSA-wwpq-f5c3-7hvx, spring-data-commons, spring-expression, micrometer-core |
+| Tomcat 10.1.53 → 10.1.61 | `build.gradle` (`ext['tomcat.version']`) | GHSA-9xv2-5v5q-p794 (CVE-2026-65905, crítica 9.8), GHSA-gcx9-497g-6cp6, GHSA-h3x4-894j-xpx5, GHSA-r29c-68gh-xp6x y otras |
+| Jackson 2.21.2 → 2.21.7 | `build.gradle` (`ext['jackson-bom.version']`) | jackson-databind y jackson-core: 8 altas (CVSS 7.5-8.7) |
+| Driver PostgreSQL 42.7.10 → 42.7.12 | `build.gradle` (`ext['postgresql.version']`) | GHSA-98qh-xjc8-98pq, GHSA-j92g-9f8w-j867 (alta 8.2) |
+| log4j-api 2.24.3 → 2.25.5, commons-lang3 3.17.0 → 3.20.0 | `build.gradle` | GHSA-qv9r-c865-cp47, GHSA-j288-q9x7-2f5v (medias) |
+| springdoc 2.8.9 → 2.8.17 | `build.gradle` | Mantenimiento dentro de la misma versión |
+
+Todas son versiones de parche de la misma línea; después de cada cambio se ejecutaron los 31 tests y la colección de Postman contra la imagen.
+
+### Vulnerabilidades pendientes y justificación
+
+| Vulnerabilidad | Paquete | CVSS | Por qué queda | Riesgo para la app |
+|---|---|---|---|---|
+| GHSA-pc63-qcmh-9cmg (CVE-2026-47884) | spring-webmvc 6.2.19 | 9.8 | Sin parche en Spring Framework 6.2.x; corregido solo en 7.0.9 (requiere migrar a Spring Boot 4, cambio mayor) | **No explotable**: afecta a `XsltView`; la app es una API JSON y no usa vistas XSLT (verificado: 0 usos en el código) |
+| GHSA-j9f9-w8pj-32f8 (CVE-2026-47890) | spring-webmvc 6.2.19 | 9.8 | Igual que la anterior | **No explotable**: afecta a Server-Sent Events con fragmentos; la app no usa SSE (0 usos) |
+| 21 altas de Debian (glibc, gcc-14 runtime, zlib, util-linux) | paquetes base de distroless | 7.0-8.5 | Debian las marcó `won't fix` (20) o todavía sin parche (1) | Bajo: son librerías del sistema que la JVM carga pero sin herramientas de shell para explotarlas. Se resuelven solas al reconstruir cuando Debian publique el parche |
+
+Acción a futuro: migrar a Spring Boot 4 (Spring Framework 7) elimina las dos críticas; no se hizo ahora porque es una versión mayor con cambios incompatibles y no corrige nada explotable en esta aplicación.
+
+### Grype vs. Trivy
+
+Se analizó la misma imagen con Trivy 0.76.0 (`docker run aquasec/trivy image shiftmanager-backend:<tag>`):
+
+| | Grype | Trivy |
+|---|---|---|
+| Imagen inicial | 236 (9 críticas, 31 altas) | 135 (8 críticas, 26 altas) |
+| Imagen final | 72 (2 críticas, 21 altas) | 64 (2 críticas, 4 altas) |
+
+| Aspecto | Grype (Anchore) | Trivy (Aqua Security) |
+|---|---|---|
+| Qué analiza | Imágenes, directorios, SBOM | Imágenes, directorios, repos, IaC (Terraform, Dockerfile), secretos, licencias, Kubernetes |
+| Severidad de paquetes del SO | CVSS de NVD | La que asigna la distribución (Debian/Ubuntu); por eso marca menos "altas" en Debian |
+| SBOM | Usa Syft (mismo proveedor) | Integrado |
+| Extra | EPSS y "risk" en la tabla | Detecta secretos y malas configuraciones |
+
+Las dos herramientas coinciden en lo importante: las dos críticas de Spring MVC y que la imagen final no tiene nada corregible pendiente. Para el pipeline se usa Grype porque es la herramienta vista en clase.
