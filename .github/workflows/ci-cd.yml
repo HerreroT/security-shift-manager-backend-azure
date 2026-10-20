@@ -48,7 +48,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: gradle/actions/setup-gradle@v6
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
       - name: Compilar y ejecutar los tests
         run: ./gradlew build --no-daemon
       - name: Guardar el reporte de tests
@@ -99,7 +99,7 @@ jobs:
 
       # Full report (every severity) for the logs and as an artifact; it never fails the build.
       - name: Grype - informe completo
-        uses: anchore/scan-action@v7
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
         id: grype-report
         with:
           image: ${{ env.IMAGE }}:${{ steps.meta.outputs.sha_tag }}
@@ -125,7 +125,7 @@ jobs:
 
       # Security gate: fails if there is a High/Critical vulnerability that already has a fix.
       - name: Grype - control de seguridad (altas/críticas con corrección)
-        uses: anchore/scan-action@v7
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
         with:
           image: ${{ env.IMAGE }}:${{ steps.meta.outputs.sha_tag }}
           grype-version: v0.120.1
@@ -136,7 +136,7 @@ jobs:
 
       - name: Login en Azure (Service Principal)
         if: github.event_name != 'pull_request'
-        uses: azure/login@v3
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
@@ -174,7 +174,7 @@ jobs:
           echo "Imagen a desplegar: $IMAGE:$TAG"
 
       - name: Login en Azure (Service Principal)
-        uses: azure/login@v3
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 

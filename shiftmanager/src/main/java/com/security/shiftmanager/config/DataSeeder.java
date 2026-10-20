@@ -48,7 +48,8 @@ public class DataSeeder implements CommandLineRunner {
         User admin = new User(null, "admin", adminEmail, passwordEncoder.encode(adminPassword), true, Role.ADMIN);
         userRepository.save(admin);
         if (DEV_PASSWORD.equals(adminPassword)) {
-            log.info("Seeded dev admin user -> email: {}, password: {}", adminEmail, adminPassword);
+            // Never log the password itself; only warn that the public development default is in use.
+            log.warn("Seeded admin user -> email: {} with the DEVELOPMENT default password (see README)", adminEmail);
         } else {
             log.info("Seeded admin user -> email: {}", adminEmail);
         }
