@@ -22,7 +22,8 @@ El backend corre en **Azure Container Apps** con PostgreSQL 18 (Azure Database f
 | [docs/azure.md](docs/azure.md) | Recursos, costos, creación por Portal y CLI, Service Principal, secretos, despliegue manual |
 | [docs/ci-cd.md](docs/ci-cd.md) | Pipeline, condiciones de despliegue, versionado, rollback y guía de GitHub |
 | [docs/docker.md](docs/docker.md) | Dockerfile multietapa y Docker Compose |
-| [docs/seguridad.md](docs/seguridad.md) | JWT, roles, análisis de vulnerabilidades con Grype |
+| [docs/seguridad.md](docs/seguridad.md) | JWT, roles, análisis de vulnerabilidades con Grype, CodeQL |
+| [docs/monitoreo.md](docs/monitoreo.md) | Health checks, logs, métricas, consultas KQL y 12 factores |
 
 ## Tecnologías
 

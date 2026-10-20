@@ -365,3 +365,27 @@ Probes HTTP (las aplica el script con `az rest`, porque la CLI no tiene parámet
 | `Unknown properties imageType ...` al configurar probes | `az containerapp show` usa una API preview con campos que la API estable no acepta | El script lee y escribe el template con la misma versión de API (`az rest`) |
 | Login del admin con 401 | Con `SEED_DEMO_DATA=true` y base vacía, el seeder demo creó el supervisor antes que el admin, y el admin solo se creaba "si no hay usuarios" | `DataSeeder` crea el admin si no hay ningún ADMIN y corre primero (`@Order`); test `DataSeederTest` |
 | Prueba "token + x" daba 200 | Con HS384 la firma ocupa 64 caracteres; un carácter extra no forma un byte y el decodificador base64url lo descarta, la firma no cambia | No es una vulnerabilidad (ningún dato cambia). La prueba ahora altera un carácter dentro de la firma (401) |
+
+## Administración de la Container App
+
+Variables: `$RG = "rg-shiftmanager"`, `$APP = "ca-shiftmanager-backend"`. En el Portal, todo parte de **Container Apps** → `ca-shiftmanager-backend`.
+
+| Operación | Portal | Terminal (script) | Terminal (Azure CLI) | Cómo verificar | Consecuencias / costos |
+|---|---|---|---|---|---|
+| **Deploy** de una versión | **Application** → **Revisions and replicas** → **Create new revision** → contenedor → elegir imagen/tag → **Create**. O GitHub: Run workflow | `deploy --tag <tag>` | `az containerapp update -g $RG -n $APP --image acrshiftmanagerth.azurecr.io/shiftmanager-backend:<tag>` | `/actuator/info` muestra el tag; `status` | Nueva revisión; la anterior atiende hasta que la nueva pasa las probes (sin corte). Sin pérdida de datos |
+| **Stop** | **Overview** → **Stop** | `stop` | `az rest --method post --url "https://management.azure.com$(az containerapp show -g $RG -n $APP --query id -o tsv)/stop?api-version=2026-01-01"` | `status` → `Stopped`; la URL responde **404** | Deja de atender y no consume cómputo. No se pierde nada (la base es otro recurso) |
+| **Start** | **Overview** → **Start** | `start` | Igual con `/start` | `status` → `Running`; la URL vuelve a 200 (~80 s, incluye el arranque de Spring Boot) | — |
+| **Restart** | **Revisions and replicas** → la revisión activa → **Restart** | `restart` | `az containerapp revision restart -g $RG -n $APP --revision <revisión>` | Consulta KQL 3 de `docs/monitoreo.md` (nuevo arranque) | Corte breve si hay una sola réplica |
+| **Estado** | **Overview** (*Status*, *Application Url*, imagen) | `status` | `az containerapp show -g $RG -n $APP --query "{estado:properties.runningStatus, imagen:properties.template.containers[0].image}"` | — | — |
+| **Revisiones** | **Revisions and replicas** | `revisions` | `az containerapp revision list -g $RG -n $APP -o table` | Columna *Traffic* = 100 en la activa | — |
+| **Logs** | **Monitoring** → **Log stream** (en vivo) / **Logs** (KQL) | `logs` / `logs -f` | `az containerapp logs show -g $RG -n $APP --tail 100 --follow` | — | — |
+| **Imagen desplegada** | **Containers** (*Image*) | `status` | `az containerapp show -g $RG -n $APP --query properties.template.containers[0].image -o tsv` | `/actuator/info` | — |
+| **URL** | **Overview** → *Application Url* | `url` | `az containerapp show -g $RG -n $APP --query properties.configuration.ingress.fqdn -o tsv` | — | — |
+| **Listar** | **Container Apps** (lista del resource group) | `list` | `az containerapp list -g $RG -o table` | — | — |
+| **Réplicas mínimas** | **Application** → **Scale** → *Min replicas* | `scale 1` / `scale 0` | `az containerapp update -g $RG -n $APP --min-replicas 1` | `status` | 1 = sin arranque en frío pero consume siempre; 0 = gratis sin tráfico, primer pedido ~40 s |
+| **Rollback** | Crear revisión con el tag anterior (ver *Deploy*) | `deploy --tag <tag anterior>` | GitHub: Run workflow con `deploy` + `image_tag` | `/actuator/info` | Igual que un deploy; la imagen anterior sigue en el ACR |
+| **Delete** | **Overview** → **Delete** → confirmar | `delete` (pide escribir el nombre) | `az containerapp delete -g $RG -n $APP --yes` | `list` ya no la muestra | **Se pierde la URL y la configuración** (variables, secretos, probes, rol AcrPull, rol del SP). No se pierden la base ni las imágenes. Para recuperarla: `deploy --tag <tag>` la vuelve a crear (la URL cambia el sufijo) y hay que reasignar `Contributor` al SP |
+
+Probado el 2026-10-20: `stop` (URL 404, estado `Stopped`), `start` (200 a los 82 s), `restart`, `list`, `revisions`, `deploy` y rollback. `delete` no se ejecutó sobre la app real porque es destructivo.
+
+> La CLI actual no tiene `az containerapp stop/start`; el script usa la API REST (`POST .../stop` y `.../start`), igual que el Portal.

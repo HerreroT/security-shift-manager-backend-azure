@@ -267,15 +267,23 @@ def logs(follow):
     run(cmd + (["--follow"] if follow else []), check=False)
 
 
+def app_action(action):
+    """POST .../stop or .../start on the REST API (the current CLI has no `az containerapp stop/start`)."""
+    app_id = run(["az", "containerapp", "show", "-g", RESOURCE_GROUP, "-n", APP_NAME, "--query", "id", "-o", "tsv"],
+                 capture=True)
+    run(["az", "rest", "--method", "post", "--url",
+         f"https://management.azure.com{app_id}/{action}?api-version={ACA_API_VERSION}", "-o", "none"])
+
+
 def stop():
     info(f"Deteniendo {APP_NAME} (deja de atender peticiones; no se pierden datos ni configuración)")
-    run(["az", "containerapp", "stop", "-g", RESOURCE_GROUP, "-n", APP_NAME, "-o", "none"])
+    app_action("stop")
     status()
 
 
 def start():
     info(f"Iniciando {APP_NAME}")
-    run(["az", "containerapp", "start", "-g", RESOURCE_GROUP, "-n", APP_NAME, "-o", "none"])
+    app_action("start")
     status()
 
 
