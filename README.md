@@ -67,6 +67,7 @@ La base `shiftmanager` tiene que existir: `CREATE DATABASE shiftmanager;`.
 | `PORT` | `8090` | Puerto HTTP |
 | `SPRING_PROFILES_ACTIVE` | (vacío = H2) | `postgres` o `prod` |
 | `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | `localhost:5432/shiftmanager` (sin default en `prod`) | Conexión a PostgreSQL |
+| `DB_POOL_MAX_SIZE`, `DB_POOL_MIN_IDLE` | `5` / `2` | Tamaño del pool de conexiones HikariCP (ver `application.properties`) |
 | `JWT_SECRET` | secreto de desarrollo (sin default en `prod`) | Firma de los tokens (mínimo 32 caracteres) |
 | `JWT_EXPIRATION_MS` | `86400000` (24 h) | Duración del token |
 | `APP_VERSION`, `GIT_COMMIT` | `dev` / `unknown` | Versión y commit que muestra `/actuator/info` (los carga la imagen Docker) |
