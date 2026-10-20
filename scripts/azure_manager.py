@@ -125,6 +125,8 @@ def app_exists():
 def login(use_sp):
     if use_sp:
         sp = read_env_file("azure-sp.env")
+        # Separate az profile, so logging in as the Service Principal does not replace the personal session.
+        os.environ["AZURE_CONFIG_DIR"] = str(SECRETS_DIR / "az-sp-profile")
         info("Login con el Service Principal")
         run(["az", "login", "--service-principal", "-u", sp["AZURE_CLIENT_ID"], "--tenant",
              sp["AZURE_TENANT_ID"], "-o", "none", "-p", sp["AZURE_CLIENT_SECRET"]], quiet_args=1)

@@ -291,3 +291,77 @@ GitHub nunca ve la contraseña de la base ni el secreto del JWT, y Spring Boot n
 - Terminal: `gh secret set AZURE_CREDENTIALS` (pide el valor sin mostrarlo) y `gh variable set ACR_NAME --body acrshiftmanagerth`. Verificar con `gh secret list` y `gh variable list` (los secretos muestran solo el nombre y la fecha).
 
 **Por qué no Key Vault**: Key Vault sirve para centralizar secretos compartidos por varias aplicaciones, con rotación y auditoría. Con una sola app, los secrets de Container Apps (cifrados y no visibles desde el Portal una vez guardados) cubren la necesidad sin agregar otro recurso.
+
+## Despliegue manual
+
+El despliegue manual usa `scripts/azure_manager.py` (Python 3, Docker y Azure CLI). Reemplaza al `script_az.py` de la cursada con las mismas operaciones y una diferencia importante: **el tag de la imagen sale del commit de git (`:<sha corto>`), igual que en GitHub Actions**, así el script y el pipeline nunca apuntan a imágenes distintas.
+
+| Comando (PowerShell, desde la raíz del repo) | Qué hace |
+|---|---|
+| `python scripts/azure_manager.py` | Menú interactivo con todas las opciones |
+| `python scripts/azure_manager.py build-push` | `docker build --platform linux/amd64` con etiquetas OCI, `az acr login`, `docker push` de `:<sha>` y lista de tags del ACR |
+| `python scripts/azure_manager.py build-push --tag v1.1.0` | Igual, con un tag de versión adicional |
+| `python scripts/azure_manager.py tags` | Imágenes del ACR, más nuevas primero |
+| `python scripts/azure_manager.py deploy --tag <sha>` | Verifica que el tag exista en el ACR y crea una revisión nueva con esa imagen. Si la app no existe, la crea (ver abajo) |
+| `python scripts/azure_manager.py status` | Estado, imagen desplegada, revisión activa, réplicas y URL |
+| `python scripts/azure_manager.py url` | URL pública |
+| `python scripts/azure_manager.py revisions` | Revisiones con fecha, tráfico, réplicas e imagen |
+| `python scripts/azure_manager.py logs [-f]` | Últimas 100 líneas de log (con `-f`, en vivo) |
+| `python scripts/azure_manager.py stop` / `start` / `restart` | Detener, iniciar, reiniciar la revisión activa |
+| `python scripts/azure_manager.py scale 1` / `scale 0` | Réplicas mínimas 1 (demo, sin arranque en frío) / 0 (ahorro) |
+| `python scripts/azure_manager.py list` | Container Apps del resource group |
+| `python scripts/azure_manager.py delete` | Elimina la app (pide escribir el nombre para confirmar) |
+| `--sp` antes del comando | Usa el Service Principal (credenciales de `%USERPROFILE%\.shiftmanager\azure-sp.env`, perfil de `az` separado) en lugar de la sesión personal |
+
+### Qué hace el primer deploy (creación de la app)
+
+Equivale a este comando más la configuración de probes:
+
+```powershell
+az containerapp create -g rg-shiftmanager -n ca-shiftmanager-backend --environment cae-shiftmanager `
+  --image acrshiftmanagerth.azurecr.io/shiftmanager-backend:<sha> `
+  --registry-server acrshiftmanagerth.azurecr.io --registry-identity system `
+  --ingress external --target-port 8090 `
+  --cpu 0.5 --memory 1.0Gi --min-replicas 0 --max-replicas 1 `
+  --secrets db-password=<...> jwt-secret=<...> admin-password=<...> `
+  --env-vars SPRING_PROFILES_ACTIVE=prod `
+    DB_URL="jdbc:postgresql://psql-shiftmanager-th.postgres.database.azure.com:5432/shiftmanager?sslmode=require" `
+    DB_USERNAME=shiftadmin DB_PASSWORD=secretref:db-password JWT_SECRET=secretref:jwt-secret `
+    ADMIN_EMAIL=admin@shiftmanager.com ADMIN_PASSWORD=secretref:admin-password SEED_DEMO_DATA=true
+```
+
+| Parámetro | Por qué |
+|---|---|
+| `--registry-identity system` | Activa la identidad administrada de la app y le asigna `AcrPull` sobre el ACR: descarga imágenes sin usuario ni contraseña |
+| `--ingress external --target-port 8090` | URL HTTPS pública; Azure termina TLS y reenvía al puerto 8090 del contenedor. HTTP redirige a HTTPS (301) |
+| `--cpu 0.5 --memory 1.0Gi` | Spring Boot arranca en ~30 s y usa ~300 MB; 0.25 vCPU hace el arranque mucho más lento |
+| `--min-replicas 0 --max-replicas 1` | Sin tráfico se apaga (no consume); el primer pedido después tarda ~40 s. Para la demo: `scale 1` |
+| `--secrets` + `secretref:` | Los valores sensibles se guardan como secretos de la app; las variables de entorno solo los referencian |
+| `?sslmode=require` | Conexión cifrada con PostgreSQL |
+
+Probes HTTP (las aplica el script con `az rest`, porque la CLI no tiene parámetros para probes):
+
+| Probe | Ruta | Configuración | Efecto |
+|---|---|---|---|
+| Startup | `/actuator/health/liveness` | cada 5 s, hasta 30 fallos (~2,5 min) | Espera a que Spring Boot termine de arrancar |
+| Liveness | `/actuator/health/liveness` | cada 30 s, 3 fallos | Si el proceso se cuelga, Azure reinicia el contenedor |
+| Readiness | `/actuator/health/readiness` | cada 10 s, 3 fallos | Si se pierde la base de datos, deja de recibir tráfico sin reiniciarse |
+
+**Portal** (alternativa a la creación): buscador **Container Apps** → **+ Create** → Resource group `rg-shiftmanager`, name `ca-shiftmanager-backend`, environment `cae-shiftmanager` → pestaña **Container**: desmarcar *Use quickstart image*, Registry `acrshiftmanagerth.azurecr.io`, Image `shiftmanager-backend`, Tag `<sha>`, Authentication **Managed identity** (*System assigned*), CPU 0.5 / Memory 1 Gi, variables de entorno (las sensibles como *Reference a secret*) → pestaña **Ingress**: habilitado, *Accepting traffic from anywhere*, target port `8090` → **Review + create**. Probes: la app → **Containers** → **Edit and deploy** → el contenedor → **Health probes**.
+
+### Resultado del despliegue (2026-10-20)
+
+- URL: **https://ca-shiftmanager-backend.lemonground-a6322200.chilecentral.azurecontainerapps.io**
+- `/actuator/info` muestra la versión y el commit desplegados.
+- Colección de Postman contra Azure (environment `azure`): 20 peticiones, 8/8 aserciones, dos corridas seguidas.
+- Health con detalle (ADMIN): base `PostgreSQL` en `UP`.
+- Rollback probado con el Service Principal: `deploy --tag c9d5632` (versión anterior) y vuelta a `f2cbce5`.
+
+### Problemas encontrados en el primer despliegue
+
+| Problema | Causa | Solución |
+|---|---|---|
+| `ExpressEnvironmentFeatureNotSupported` al crear la app | El environment se creó en modo `Express` (default de la CLI nueva) | Recrearlo con `--environment-mode ConsumptionOnly` |
+| `Unknown properties imageType ...` al configurar probes | `az containerapp show` usa una API preview con campos que la API estable no acepta | El script lee y escribe el template con la misma versión de API (`az rest`) |
+| Login del admin con 401 | Con `SEED_DEMO_DATA=true` y base vacía, el seeder demo creó el supervisor antes que el admin, y el admin solo se creaba "si no hay usuarios" | `DataSeeder` crea el admin si no hay ningún ADMIN y corre primero (`@Order`); test `DataSeederTest` |
+| Prueba "token + x" daba 200 | Con HS384 la firma ocupa 64 caracteres; un carácter extra no forma un byte y el decodificador base64url lo descarta, la firma no cambia | No es una vulnerabilidad (ningún dato cambia). La prueba ahora altera un carácter dentro de la firma (401) |
