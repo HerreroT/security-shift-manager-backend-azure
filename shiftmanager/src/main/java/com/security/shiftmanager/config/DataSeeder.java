@@ -7,13 +7,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
- * Creates the first administrator when the database has no users. The credentials come from
+ * Creates the first administrator when the database has no administrator. The credentials come from
  * ADMIN_EMAIL / ADMIN_PASSWORD; the defaults are only meant for local development.
  */
+@Order(1)
 @Component
 public class DataSeeder implements CommandLineRunner {
 
@@ -38,7 +40,9 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (userRepository.count() > 0) {
+        // Checks for an ADMIN instead of "any user": if another seeder created a user first,
+        // the application would otherwise end up without an administrator.
+        if (userRepository.existsByRole(Role.ADMIN)) {
             return;
         }
         User admin = new User(null, "admin", adminEmail, passwordEncoder.encode(adminPassword), true, Role.ADMIN);

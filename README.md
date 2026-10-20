@@ -71,7 +71,7 @@ La base `shiftmanager` tiene que existir: `CREATE DATABASE shiftmanager;`.
 | `JWT_SECRET` | secreto de desarrollo (sin default en `prod`) | Firma de los tokens (mínimo 32 caracteres) |
 | `JWT_EXPIRATION_MS` | `86400000` (24 h) | Duración del token |
 | `APP_VERSION`, `GIT_COMMIT` | `dev` / `unknown` | Versión y commit que muestra `/actuator/info` (los carga la imagen Docker) |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | `admin@shiftmanager.com` / `admin123` | Primer administrador; se crea solo si no hay usuarios |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | `admin@shiftmanager.com` / `admin123` | Primer administrador; se crea si no existe ningún usuario ADMIN |
 | `SEED_DEMO_DATA` | `true` | Carga datos de ejemplo si no hay guardias |
 | `CORS_ALLOWED_ORIGINS` | `*` | Orígenes permitidos por CORS |
 
