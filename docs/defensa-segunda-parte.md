@@ -10,6 +10,7 @@ Lo que quedó pendiente en la primera defensa, con qué mostrar y qué decir. Co
 | Qué pasa si detengo la app mientras corre un proceso | [4](#4-qué-pasa-si-detengo-la-app-mientras-corre-un-proceso) |
 | Los 12 factores | [5](#5-los-12-factores) |
 | Hasta qué paso del pipeline llega cada cambio (normal y de Java) | [6](#6-hasta-qué-paso-del-pipeline-llega-cada-cambio) |
+| Cómo llega un commit a Azure y qué commit está corriendo | [6](#cómo-llega-un-commit-a-azure-qué-commit-está-corriendo) |
 | Lista para el día | [7](#7-lista-para-el-día) |
 
 ---
@@ -298,6 +299,39 @@ python scripts/azure_manager.py version                     # los tres SHA igual
 5. Cerralo sin mergear: `gh pr close --delete-branch`.
 
 **Java que no compila**: borrá un `;` en cualquier clase. Mismo resultado, pero en la compilación.
+
+### ¿Cómo llega un commit a Azure? ¿Qué commit está corriendo?
+
+**Qué dispara el deploy**: que un commit llegue a la rama `deploy`. Para desplegar no hago un commit nuevo: con `git push origin origin/main:deploy` muevo la rama `deploy` al mismo commit que `main`. Ese push dispara el workflow, y como la rama es `deploy`, corre también el tercer job.
+
+**El SHA del commit es la versión** y la sigo de punta a punta. Ejemplo real, lo que está hoy en Azure:
+
+| Paso | Dónde | Valor |
+|---|---|---|
+| 1. Commit | GitHub, rama `deploy` (el merge del PR #40) | `32cff908b7d5e7292c97cd83ae2a0a3f85ff896b` |
+| 2. Run del pipeline | Actions → run *Merge pull request #40* en `deploy` | Usa `GITHUB_SHA` y lo corta a 7 caracteres: `32cff90` |
+| 3. Imagen | ACR → `shiftmanager-backend` → tag | `acrshiftmanagerth.azurecr.io/shiftmanager-backend:32cff90` (digest `sha256:870318ce…`) |
+| 4. Adentro de la imagen | Etiquetas OCI y variables `APP_VERSION` / `GIT_COMMIT` | `org.opencontainers.image.revision` = SHA completo |
+| 5. Revisión | Portal → *Revisions and replicas* | `ca-shiftmanager-backend--0000013` con la imagen `:32cff90` |
+| 6. La app en ejecución | `/actuator/info` | `"version":"32cff90"`, `"commit":"32cff908b7d5…"` |
+
+Al final, el job de Deploy consulta `/actuator/info` hasta que responde con ese SHA: así confirma que en Azure corre exactamente ese commit, y no solo que el comando se ejecutó.
+
+**Comprobarlo en vivo:**
+
+```powershell
+python scripts/azure_manager.py version        # OK: 32cff90 / 32cff90 / 32cff90  (rama deploy / imagen de la app / /actuator/info)
+git log -1 --oneline origin/deploy             # el commit en GitHub
+python scripts/azure_manager.py tags           # todas las imágenes del ACR, una por commit
+```
+
+En el navegador: GitHub → rama `deploy` → SHA del último commit; Portal → app → *Containers* → la imagen termina en `:<sha>`; `<URL>/actuator/info`.
+
+**De un commit cualquiera a Azure:**
+- Si ya pasó por `dev` o `main`, su imagen ya existe en el ACR: Actions → **Run workflow** → *Desplegar* + `image_tag` = el SHA corto. Despliega sin recompilar (también sirve para volver atrás).
+- Si es nuevo: PR a `dev` → PR `dev` → `main` → `git push origin origin/main:deploy`.
+
+**Decí**: *"Cada commit tiene un SHA. El pipeline lo usa como tag de la imagen y lo mete adentro de la imagen, y la app lo devuelve en /actuator/info. Para desplegar, muevo la rama deploy al commit de main: ese push dispara el pipeline completo. Para saber qué commit corre en Azure, comparo el último commit de deploy, la imagen de la Container App y lo que responde la app: si los tres coinciden, en Azure está exactamente ese commit."*
 
 ---
 
