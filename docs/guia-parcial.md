@@ -107,7 +107,7 @@ Mostrar:
 2. La imagen en el ACR: `python scripts/azure_manager.py tags` (o Portal → `acrshiftmanagerth` → **Repositories** → `shiftmanager-backend`).
 3. Que **no** se desplegó: `/actuator/info` sigue mostrando la versión anterior; `/hello` sigue con el mensaje viejo.
 
-Qué decir: *"El pipeline compiló, corrió los 33 tests, construyó la imagen para linux/amd64 con las etiquetas OCI, la analizó con Grype y la publicó en el ACR con el SHA del commit como tag. No desplegó porque la condición de deploy es llegar a la rama `deploy` o pedirlo a mano."*
+Qué decir: *"El pipeline compiló, corrió los 36 tests, construyó la imagen para linux/amd64 con las etiquetas OCI, la analizó con Grype y la publicó en el ACR con el SHA del commit como tag. No desplegó porque la condición de deploy es llegar a la rama `deploy` o pedirlo a mano."*
 
 ### Parte 2: "Ahora desplegá esa misma versión, comprobá que funciona, mostrame los logs y detené la aplicación"
 
