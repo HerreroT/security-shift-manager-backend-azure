@@ -66,6 +66,8 @@ class RoleAccessTest {
                 .andExpect(status().isForbidden());
         mockMvc.perform(get("/api/users").header("Authorization", bearer(supervisorToken)))
                 .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/admin/demo/slow-process").header("Authorization", bearer(supervisorToken)))
+                .andExpect(status().isForbidden());
     }
 
     @Test
