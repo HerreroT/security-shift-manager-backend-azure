@@ -1,6 +1,6 @@
 # Defensa paso a paso
 
-Qué hacer, qué mostrar y qué decir ante cada pedido del profesor. Para la versión técnica de cada respuesta y las 50 preguntas: [guia-parcial.md](guia-parcial.md).
+Qué hacer, qué mostrar y qué decir ante cada pedido del profesor. Para la versión técnica de cada respuesta y las 50 preguntas: [guia-parcial.md](guia-parcial.md). Los recursos de Azure, dónde corre la app, el monitoreo, el apagado con un proceso en curso, los 12 factores y hasta dónde llega cada cambio en el pipeline: [defensa-segunda-parte.md](defensa-segunda-parte.md).
 
 Todos los comandos se ejecutan en PowerShell, en la carpeta del repositorio del backend:
 
@@ -163,7 +163,7 @@ git fetch origin; git push origin origin/main:deploy
 
 | Job | Qué hace |
 |---|---|
-| **Build y tests** | Compila con Gradle y corre los 33 tests |
+| **Build y tests** | Compila con Gradle y corre los 36 tests |
 | **Imagen, Grype y push al ACR** | Construye la imagen Docker, la escanea con Grype (corta si hay vulnerabilidades altas o críticas con solución) y la sube al ACR con el commit como tag |
 | **Deploy a Azure Container Apps** | Solo en la rama `deploy`: actualiza la app con la imagen nueva y verifica en `/actuator/info` que corre esa versión |
 
