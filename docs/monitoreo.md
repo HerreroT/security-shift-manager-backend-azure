@@ -23,7 +23,20 @@ flowchart LR
 | **Logs de sistema** | Eventos de la plataforma: imagen descargada, contenedor iniciado, probe fallida, revisión lista | Tabla `ContainerAppSystemLogs_CL` |
 | **Azure Monitor** | `Requests` (por código), `ResponseTime`, `RestartCount`, `Replicas`, CPU, memoria y métricas de la JVM (heap, GC, threads; activadas con `--enable-java-metrics`) | Portal → app → **Monitoring** → **Metrics** |
 
-No se usa Application Insights: daría trazas por petición y dependencias (SQL), pero requiere agregar el agente Java a la imagen (más tamaño, arranque y superficie de vulnerabilidades). El access log + Azure Monitor + Actuator responden todas las preguntas de abajo sin piezas extra. Si se quisiera agregar: crear un recurso Application Insights conectado a `log-shiftmanager`, copiar su *Connection string* (Portal → Application Insights → *Overview*), guardarla como secret de la Container App (`APPLICATIONINSIGHTS_CONNECTION_STRING=secretref:...`) y sumar el agente `applicationinsights-agent.jar` con `-javaagent` en el Dockerfile.
+## Application Insights: todas las métricas juntas
+
+Recurso `appi-shiftmanager` (workspace-based, guarda en `log-shiftmanager`) y el workbook **Shiftmanager - Métricas**, definidos en [`infra/monitoring.bicep`](../infra/monitoring.bicep).
+
+- **Ver**: Portal → `appi-shiftmanager` → **Workbooks** → *Shiftmanager - Métricas*. En una página: resumen (peticiones, % fallidas, promedio y P95), peticiones por código, latencia, endpoints, logins 200/401, excepciones, consultas SQL, pool HikariCP, memoria/CPU/threads/GC de la JVM, métricas de la Container App (Requests, réplicas, reinicios, CPU, memoria) y últimos logs WARN/ERROR.
+- **Cómo llegan los datos**: el agente Java de Application Insights se adjunta al arrancar (`applicationinsights-runtime-attach` en `build.gradle`, `ApplicationInsights.attach()` en `ShiftmanagerApplication`) solo si existe `APPLICATIONINSIGHTS_CONNECTION_STRING`; localmente no hace nada. Captura peticiones, dependencias SQL, excepciones, logs y las métricas de Micrometer/Actuator (`customMetrics`).
+- **Conexión**: la Container App tiene el secret `appinsights-connection-string` y las variables `APPLICATIONINSIGHTS_CONNECTION_STRING=secretref:appinsights-connection-string` y `APPLICATIONINSIGHTS_ROLE_NAME=shiftmanager-backend`.
+- **Recrear**: `az deployment group create -g rg-shiftmanager -f infra/monitoring.bicep`, y después:
+
+```powershell
+$cs = az resource show -g rg-shiftmanager -n appi-shiftmanager --resource-type Microsoft.Insights/components --query properties.ConnectionString -o tsv
+az containerapp secret set -g rg-shiftmanager -n ca-shiftmanager-backend --secrets "appinsights-connection-string=$cs"
+az containerapp update -g rg-shiftmanager -n ca-shiftmanager-backend --set-env-vars "APPLICATIONINSIGHTS_CONNECTION_STRING=secretref:appinsights-connection-string" "APPLICATIONINSIGHTS_ROLE_NAME=shiftmanager-backend"
+```
 
 ## Preguntas y cómo responderlas
 
