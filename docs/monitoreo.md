@@ -114,6 +114,18 @@ ContainerAppConsoleLogs_CL
 | project TimeGenerated, RevisionName_s, Log_s
 ```
 
+**7. Apagados ordenados (stop, deploy, escalado a 0)**
+
+```kusto
+ContainerAppConsoleLogs_CL
+| where TimeGenerated > ago(24h)
+| where Log_s has_any ("graceful", "Shutdown completed", "Slow process", "still running")
+| project TimeGenerated, RevisionName_s, Log_s
+| order by TimeGenerated asc, Log_s asc
+```
+
+`has` busca palabras completas (`graceful` sí, `raceful` no). `Commencing graceful shutdown` → (`Slow process finished` si había un proceso en curso) → `Graceful shutdown complete` → `ShiftmanagerPool - Shutdown completed`. Detalle en [defensa-segunda-parte.md](defensa-segunda-parte.md#4-qué-pasa-si-detengo-la-app-mientras-corre-un-proceso).
+
 ### Resultados reales (2026-10-20, revisión con la imagen `d16c9a2`)
 
 Consulta 1, después de generar tráfico de prueba:
@@ -145,6 +157,35 @@ az monitor metrics list --resource $id --metric Requests --interval PT1H --aggre
 az monitor metrics list --resource $id --metric ResponseTime --interval PT1H --aggregation Average -o table
 az monitor metrics list --resource $id --metric RestartCount --interval PT1H --aggregation Total -o table
 ```
+
+## Alertas (documentadas, no creadas)
+
+Las probes hacen que Azure reaccione solo (reinicia o saca de servicio), pero nadie se entera. Para recibir un mail hacen falta un *action group* y reglas de alerta sobre las métricas. No están creadas para no gastar crédito: cada regla de métrica cuesta alrededor de US$ 0,10 por mes y el mail del action group es gratis.
+
+```powershell
+az monitor action-group create -g rg-shiftmanager -n ag-shiftmanager --short-name shiftmgr `
+  --action email tomas t.herrero@alumno.um.edu.ar
+$app = az containerapp show -g rg-shiftmanager -n ca-shiftmanager-backend --query id -o tsv
+
+# La app se reinicia (liveness fallando, falta de memoria)
+az monitor metrics alert create -g rg-shiftmanager -n alerta-reinicios --scopes $app `
+  --condition "total RestartCount > 0" --window-size 5m --evaluation-frequency 1m `
+  --severity 2 --action ag-shiftmanager --description "La app se está reiniciando"
+
+# Errores del servidor
+az monitor metrics alert create -g rg-shiftmanager -n alerta-errores-5xx --scopes $app `
+  --condition "total Requests > 5 where statusCodeCategory includes 5xx" --window-size 5m --evaluation-frequency 1m `
+  --severity 1 --action ag-shiftmanager --description "Más de 5 errores 5xx en 5 minutos"
+
+# Muchos 4xx seguidos: posible fuerza bruta contra el login
+az monitor metrics alert create -g rg-shiftmanager -n alerta-fuerza-bruta --scopes $app `
+  --condition "total Requests > 30 where statusCodeCategory includes 4xx" --window-size 5m --evaluation-frequency 1m `
+  --severity 2 --action ag-shiftmanager --description "Más de 30 respuestas 4xx en 5 minutos"
+```
+
+En el Portal: app → **Alerts** → **Create** → **Alert rule** → *Signal*: *Requests* / *Total Replica Restart Count* → condición y umbral → *Actions*: el action group → nombre y severidad. La alerta se dispara en 1 a 5 minutos y llega un mail; se ve en **Monitor** → **Alerts**. Para borrarlas: `az monitor metrics alert delete -g rg-shiftmanager -n <nombre>`.
+
+Una alerta sobre los logs (por ejemplo, `APPLICATION FAILED TO START`) también es posible con *log search alerts*, pero cuesta más porque ejecuta la consulta KQL cada pocos minutos.
 
 ## Métricas de la aplicación (Actuator, token ADMIN)
 

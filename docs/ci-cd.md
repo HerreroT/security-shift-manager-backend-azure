@@ -24,7 +24,7 @@ flowchart LR
 
 | Job | Qué hace | Cuándo se omite |
 |---|---|---|
-| **Build y tests** | `./gradlew build` (compila y corre los 33 tests). Guarda el reporte de tests como artefacto | Run workflow con `image_tag` (despliega una imagen existente) |
+| **Build y tests** | `./gradlew build` (compila y corre los 36 tests). Guarda el reporte de tests como artefacto | Run workflow con `image_tag` (despliega una imagen existente) |
 | **Imagen, Grype y push al ACR** | Build con `--platform linux/amd64` y build args OCI; Grype informe completo (artefacto y resumen) y control de seguridad; login con el SP y `docker push` | El push y el login se omiten en los PR |
 | **Deploy a Azure Container Apps** | Verifica que el tag exista en el ACR, `az containerapp update --image`, y espera hasta que `/actuator/info` muestre esa versión (máx. 6 min) | Siempre, salvo push a `deploy` o Run workflow con `deploy` marcado; nunca si `CD_ENABLED=false` |
 

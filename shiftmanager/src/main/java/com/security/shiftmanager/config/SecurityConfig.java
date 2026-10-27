@@ -64,7 +64,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").hasRole("ADMIN")
                         // ADMIN manages users and is the only one who can change data;
                         // SUPERVISOR can only read (guards, services, shifts and reports).
-                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/users/**", "/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/**").hasAnyRole("ADMIN", "SUPERVISOR")
                         .requestMatchers("/api/**").hasRole("ADMIN")
                         .anyRequest().authenticated())

@@ -409,6 +409,62 @@
           }
         }
       ]
+    },
+    {
+      "name": "6. Apagado ordenado (ADMIN)",
+      "description": "Enviar el pedido y, mientras espera, detener la app. Spring deja de aceptar pedidos nuevos y espera hasta 20 s a los que están en curso. En Azure usar el de 30 s (el SIGTERM llega 12 a 14 s después del stop): python scripts/azure_manager.py stop. En local alcanza el de 15 s: docker compose stop backend (con seconds=25 se corta a los 20 s).",
+      "item": [
+        {
+          "name": "Proceso lento de 15 s (apagar la app mientras corre)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200: el proceso terminó aunque se apagó la app', () => pm.response.to.have.status(200));",
+                  "pm.test('Duró los segundos pedidos', () => pm.expect(pm.response.json().seconds).to.eql(15));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/demo/slow-process?seconds=15"
+          }
+        },
+        {
+          "name": "Proceso lento de 30 s (para Azure: apagar la app mientras corre)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200: el proceso terminó aunque se apagó la app', () => pm.response.to.have.status(200));",
+                  "pm.test('Duró los segundos pedidos', () => pm.expect(pm.response.json().seconds).to.eql(30));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/demo/slow-process?seconds=30"
+          }
+        }
+      ]
     }
   ]
 }
