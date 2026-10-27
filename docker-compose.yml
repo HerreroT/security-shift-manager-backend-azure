@@ -36,6 +36,9 @@ services:
     # Same architecture as Azure Container Apps.
     platform: linux/amd64
     restart: unless-stopped
+    # Time between SIGTERM and SIGKILL on "docker compose stop/down". Same as Azure Container Apps (30 s),
+    # so the graceful shutdown (up to 20 s for in-flight requests) is not cut short.
+    stop_grace_period: 30s
     depends_on:
       db:
         condition: service_healthy

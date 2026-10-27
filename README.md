@@ -212,3 +212,4 @@ cd shiftmanager
 ```
 
 La colección de Postman con las pruebas de JWT, roles, salud y métricas está en [docs/postman](docs/postman). El detalle de la seguridad (JWT, roles, anotaciones y pruebas) está en [docs/seguridad.md](docs/seguridad.md).
+____
